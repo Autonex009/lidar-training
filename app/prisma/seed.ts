@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { DEMO_PREFIX } from "../src/lib/synthetic/scenes";
 import { loadProjectConfigs } from "../src/lib/project-config";
 import { seedFoundationsContent, seedProjectProgram } from "../src/lib/learn/seed-content";
+import { seedFoundationTasks, seedTonicTasks } from "../src/lib/tasks/seed-tasks";
 import { ensureDemoAssets, demoAssetComplete, writeDemoAsset } from "../src/lib/synthetic/assets-io";
 
 const prisma = new PrismaClient();
@@ -18,6 +19,7 @@ async function seedProgram() {
     boxDefinition: "CENTER_DIMS_YAW",
     labelSchema: {
       classes: ["Vehicle", "Pedestrian", "Cyclist", "Pole", "Building", "Vegetation", "Unknown"].map((name) => ({ name })),
+      attributes: [{ key: "occlusion", name: "Occlusion", type: "single_select", required: false, appliesTo: "all", options: [{ key: "none", name: "None" }, { key: "partial", name: "Partial" }, { key: "heavy", name: "Heavy" }] }],
     },
     enabledTracks: ["cuboid"],
     certificationRequirements: { requiredTaskCodes: [] as string[] },
@@ -71,15 +73,19 @@ async function seedAssets() {
   console.log(`Registered ${metas.length} synthetic assets`);
 }
 
-async function seedTasks(_programId: string) {
-  // Stage 2+: TASK-01 .. TASK-10.
+async function seedTasks() {
+  // Task templates for foundations (TASK-*) and every project program (TONIC-*); assignments are created for existing enrollments.
+  const n = await seedFoundationTasks(prisma);
+  const t = await prisma.trainingProgram.findUnique({ where: { slug: "tonic" } });
+  const m = t ? await seedTonicTasks(prisma) : 0;
+  console.log(`Seeded ${n} foundation tasks, ${m} tonic tasks`);
 }
 
 async function main() {
   const program = await seedProgram();
   await seedLearning(program.id);
   await seedAssets();
-  await seedTasks(program.id);
+  await seedTasks();
   console.log(`Seeded program "${program.name}" (${program.slug})`);
 }
 

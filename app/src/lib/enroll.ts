@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { ensureAssignments } from "@/lib/tasks/assignments";
 
 export const defaultProgramSlug = () => process.env.DEFAULT_PROGRAM_SLUG?.trim() || "foundations";
 
@@ -13,6 +14,7 @@ export async function enrollInActiveProgram(userId: string): Promise<boolean> {
     create: { userId, programId: program.id },
     update: {},
   });
+  await ensureAssignments(userId, program.id);
   return true;
 }
 

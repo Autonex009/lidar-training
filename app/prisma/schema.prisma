@@ -298,6 +298,7 @@ model TaskTemplate {
   isRequiredForCertification Boolean      @default(false)
   trackKey                 String?
   order                    Int            @default(0)
+  config                   Json?
 
   program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
   asset        PointCloudAsset @relation(fields: [assetId], references: [id])

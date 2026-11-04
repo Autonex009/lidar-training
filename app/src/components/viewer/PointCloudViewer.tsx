@@ -27,6 +27,10 @@ export interface PointCloudViewerProps {
   showToolbar?: boolean;
   /** Extra toolbar buttons (Annotate stage tools). */
   toolbarExtras?: React.ReactNode;
+  /** Frames with annotations (tick marks on the timeline). */
+  frameMarks?: number[];
+  /** Overlay content rendered inside the canvas area (HUD, banners). */
+  children?: React.ReactNode;
   title?: string;
   className?: string;
 }
@@ -142,11 +146,12 @@ export const PointCloudViewer = forwardRef<ViewerApi, PointCloudViewerProps>(fun
       <div className="relative min-h-0 flex-1 bg-viewer">
         <div ref={hostRef} className="absolute inset-0" />
         {!loaded && !error && <div className="absolute inset-0 flex items-center justify-center text-[12px] text-[#9ca3af]">Loading point cloud…</div>}
+        {props.children}
         {error && <div className="absolute inset-0 flex items-center justify-center text-[12px] text-[#ff7a7a]">{error}</div>}
         {profile === "fly" && <div className="pointer-events-none absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[11px] text-[#d4d4d4]">WASD move · Q/E elevate · Shift faster · drag look · ⌘/Ctrl+click set target</div>}
         {loaded?.metadata?.synthetic === true && <div className="pointer-events-none absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#c6f135]">DEMO / SYNTHETIC TRAINING DATA</div>}
       </div>
-      {frameCount > 1 && <FrameTimeline frameIndex={frameIndex} frameCount={frameCount} onFrame={(i) => void setFrame(i)} />}
+      {frameCount > 1 && <FrameTimeline frameIndex={frameIndex} frameCount={frameCount} marks={props.frameMarks} onFrame={(i) => void setFrame(i)} />}
     </div>
   );
 });

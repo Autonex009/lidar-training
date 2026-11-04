@@ -31,7 +31,7 @@ const FRAG = /* glsl */ `
   varying vec3 vColor;
   void main() { gl_FragColor = vec4(vColor, 1.0); }`;
 
-interface OverlayItem { data: CuboidOverlay; group: THREE.Group; edges: THREE.LineSegments; solid: THREE.Mesh; baseColor: THREE.Color }
+interface OverlayItem { data: CuboidOverlay; group: THREE.Group; edges: THREE.LineSegments; solid: THREE.Mesh; arrow: THREE.Mesh; baseColor: THREE.Color }
 
 function hashColor(s: string): string {
   let h = 0;
@@ -252,14 +252,21 @@ export class ViewerEngine {
       new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(size.x / 2, 0, 0)]),
       edges.material as THREE.LineBasicMaterial,
     );
-    const solid = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
+    const solid = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide, transparent: true, opacity: 0.14, color: ACCENT, depthWrite: false }));
     solid.userData.overlayId = o.id;
+    // heading arrow at the +length face (shown for the selected box only)
+    const coneH = Math.min(0.6, Math.max(0.15, Math.min(size.x, size.y, size.z) * 0.4));
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(coneH * 0.45, coneH, 12), new THREE.MeshBasicMaterial({ color: ACCENT, depthTest: false }));
+    arrow.rotation.z = -Math.PI / 2;
+    arrow.position.set(size.x / 2 + coneH / 2, 0, 0);
+    arrow.visible = false;
+    arrow.renderOrder = 11;
     const group = new THREE.Group();
-    group.add(edges, head, solid);
+    group.add(edges, head, solid, arrow);
     group.position.set(...o.center);
     if (z) group.rotation.z = o.yaw; else group.rotation.y = o.yaw;
     this.overlayGroup.add(group);
-    this.overlays.set(o.id, { data: o, group, edges, solid, baseColor: col });
+    this.overlays.set(o.id, { data: o, group, edges, solid, arrow, baseColor: col });
     this.paintOverlay(o.id);
     this.dirty = true;
   }
@@ -294,6 +301,8 @@ export class ViewerEngine {
     const mat = it.edges.material as THREE.LineBasicMaterial;
     mat.color.set(sel ? ACCENT : it.baseColor);
     mat.depthTest = !sel;
+    (it.solid.material as THREE.MeshBasicMaterial).visible = sel;
+    it.arrow.visible = sel;
     it.group.renderOrder = sel ? 10 : 0;
   }
 
@@ -361,6 +370,46 @@ export class ViewerEngine {
     const p = this.root.worldToLocal(w);
     return [p.x, p.y, p.z];
   }
+
+  /** World-space ray through a client position (for tools). */
+  ray(clientX: number, clientY: number): THREE.Ray {
+    this.setRay(clientX, clientY);
+    return this.raycaster.ray.clone();
+  }
+
+  /** Intersection with the horizontal data-frame plane at up-axis value `level`, in data frame. */
+  raycastLevel(clientX: number, clientY: number, level: number): [number, number, number] | null {
+    this.setRay(clientX, clientY);
+    const k = this.upAxis === "Z" ? 2 : 1;
+    const gl = new THREE.Vector3(0, 0, 0).setComponent(k, level);
+    this.root.updateMatrixWorld(true);
+    const upW = new THREE.Vector3(0, 0, 0).setComponent(k, 1).transformDirection(this.root.matrixWorld);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(upW, this.root.localToWorld(gl));
+    const out = new THREE.Vector3();
+    if (!this.raycaster.ray.intersectPlane(plane, out)) return null;
+    const p = this.root.worldToLocal(out);
+    return [p.x, p.y, p.z];
+  }
+
+  /** Up-axis value of the ground plane used by raycastGround (cloud minimum). */
+  get groundLevel(): number {
+    const b = this.cloud?.bounds;
+    return b ? b.min[this.upAxis === "Z" ? 2 : 1] : 0;
+  }
+
+  /** Data-frame position -> client coordinates (null when behind the camera). */
+  projectToScreen(pos: [number, number, number]): { x: number; y: number } | null {
+    const v = this.root.localToWorld(new THREE.Vector3(...pos)).project(this.camera);
+    if (v.z > 1 || v.z < -1) return null;
+    const r = this.canvas.getBoundingClientRect();
+    return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+  }
+
+  /** Add/remove annotation-tool helper objects (data frame) under the root group. */
+  addToRoot(o: THREE.Object3D) { this.root.add(o); this.dirty = true; }
+  removeFromRoot(o: THREE.Object3D) { this.root.remove(o); this.dirty = true; }
+
+  get navigationEnabled() { return this.navEnabled; }
 
   requestRender() { this.dirty = true; }
 

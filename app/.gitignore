@@ -49,3 +49,4 @@ data/assets
 test-results/
 playwright-report/
 prisma/test-integration.db*
+.verify-shots
