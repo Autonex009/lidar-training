@@ -100,3 +100,7 @@ Match the reference screenshots in `/Users/chirkut/Documents/Office/Lidar-tool/e
 - **App sidebar** (Learn/Annotate/Review/Complete) stays 250px, plain text + simple line icons, active item lime-tinted, locked items grey with lock glyph.
 - System font stack (Inter if available via `next/font`), 13–14px base, tight spacing, tables over cards for lists.
 - CSS variables on `:root`; keep a `[data-theme="dark"]` variant for chrome so dark mode can be flipped later, but light is default.
+
+## Project-specific configs (`/project-configs/<slug>/`)
+
+When a customer/project guideline document is supplied, it is converted into a config folder, never hard-coded into app logic. Format: `config.json` (validated by zod schema in `app/src/lib/project-config.ts`, Stage 2 writes it), `guidelines.md` (cleaned guideline text with image refs), `images/*.png` (reference images from the doc), `source/` (original doc). The seed loads every folder here as an additional TrainingProgram with its own labelSchema, attributes, guidelines, extra project module(s), and project-flavoured copies of the cuboid/tracking tasks. The neutral "foundations" program stays untouched. First real one: `project-configs/tonic/` (warehouse LiDAR cuboids, 22 classes, occlusion+motion attributes, human activity attribute, 10 m ROI tiers, persistent track IDs, pre-label review rules, 2D image alignment).

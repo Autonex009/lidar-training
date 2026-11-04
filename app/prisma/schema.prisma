@@ -1,0 +1,449 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NOTE: SQLite has no native enums; Prisma 6 supports enums on SQLite via string mapping.
+enum Role {
+  TRAINEE
+  REVIEWER
+  ADMIN
+}
+
+enum LessonKind {
+  TEXT
+  INTERACTIVE_CLOUD
+  INTERACTIVE_CUBOID
+  INTERACTIVE_NAV
+}
+
+enum QuestionKind {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  INTERPRETATION
+  IDENTIFY_INCORRECT
+  CHOOSE_DECISION
+  IDENTIFY_OBJECT
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum AnnotationType {
+  INSPECTION
+  IDENTIFICATION
+  CUBOID
+  SEMANTIC_SEG
+  INSTANCE_SEG
+  TRACKING
+  ERROR_DETECTION
+  MIXED
+}
+
+enum AssignmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  PENDING_REVIEW
+  REVISION_REQUIRED
+  APPROVED
+}
+
+enum SubmissionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REVISION_REQUIRED
+}
+
+enum ReviewDecisionKind {
+  APPROVE
+  REQUEST_REVISION
+}
+
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  MODULE_OPENED
+  LESSON_COMPLETED
+  MODULE_COMPLETED
+  QUIZ_ATTEMPTED
+  ASSESSMENT_ATTEMPTED
+  LEARN_COMPLETED
+  TASK_OPENED
+  ANNOTATION_STARTED
+  DRAFT_SAVED
+  TASK_SUBMITTED
+  REVISION_REQUESTED
+  REVISION_SUBMITTED
+  TASK_APPROVED
+  PROGRAM_COMPLETED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(TRAINEE)
+  createdAt    DateTime @default(now())
+  lastActiveAt DateTime?
+
+  enrollments      Enrollment[]
+  lessonProgress   LessonProgress[]
+  moduleProgress   ModuleProgress[]
+  quizAttempts     QuizAttempt[]
+  assets           PointCloudAsset[]
+  assignments      TaskAssignment[]  @relation("AssignmentTrainee")
+  assignedByMe     TaskAssignment[]  @relation("AssignmentAssigner")
+  reviewingTasks   TaskAssignment[]  @relation("AssignmentReviewer")
+  submissions      Submission[]
+  reviewDecisions  ReviewDecision[]
+  notifications    Notification[]
+  activityLogs     ActivityLog[]
+  learningSessions LearningSession[]
+  certificates     Certificate[]
+}
+
+model TrainingProgram {
+  id                        String  @id @default(cuid())
+  name                      String
+  slug                      String  @unique
+  description               String  @default("")
+  passingScore              Int     @default(80)
+  navigationProfile         String  @default("orbit")
+  upAxis                    String  @default("Z")
+  yawConvention             String  @default("CCW_ABOUT_UP")
+  boxDefinition             String  @default("CENTER_DIMS_YAW")
+  labelSchema               Json
+  enabledTracks             Json
+  certificationRequirements Json
+  isActive                  Boolean @default(true)
+  createdAt                 DateTime @default(now())
+
+  enrollments   Enrollment[]
+  modules       Module[]
+  questions     QuizQuestion[]
+  attempts      QuizAttempt[]
+  tasks         TaskTemplate[]
+  certificates  Certificate[]
+}
+
+model Enrollment {
+  id                 String   @id @default(cuid())
+  userId             String
+  programId          String
+  enrolledAt         DateTime @default(now())
+  learnCompletedAt   DateTime?
+  programCompletedAt DateTime?
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, programId])
+  @@index([programId])
+}
+
+model Module {
+  id               String  @id @default(cuid())
+  programId        String
+  key              String
+  title            String
+  summary          String  @default("")
+  order            Int
+  estimatedMinutes Int     @default(5)
+  isMandatory      Boolean @default(true)
+  trackKey         String?
+
+  program   TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+  progress  ModuleProgress[]
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+  sessions  LearningSession[]
+
+  @@unique([programId, key])
+  @@index([programId, order])
+}
+
+model Lesson {
+  id               String     @id @default(cuid())
+  moduleId         String
+  order            Int
+  title            String
+  kind             LessonKind @default(TEXT)
+  content          Json
+  estimatedMinutes Int        @default(2)
+
+  module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@index([moduleId, order])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model ModuleProgress {
+  id           String    @id @default(cuid())
+  userId       String
+  moduleId     String
+  openedAt     DateTime  @default(now())
+  completedAt  DateTime?
+  quizPassedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model QuizQuestion {
+  id            String       @id @default(cuid())
+  moduleId      String?
+  programId     String
+  kind          QuestionKind
+  prompt        String
+  options       Json
+  correctAnswer Json
+  explanation   String       @default("")
+  media         Json?
+  order         Int          @default(0)
+
+  module  Module?         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  program TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index([programId, moduleId, order])
+}
+
+model QuizAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  moduleId   String?
+  programId  String
+  isFinal    Boolean  @default(false)
+  score      Float
+  passed     Boolean
+  answers    Json
+  startedAt  DateTime @default(now())
+  finishedAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module  Module?         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  program TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index([userId, programId, isFinal])
+  @@index([userId, moduleId])
+}
+
+model PointCloudAsset {
+  id           String   @id @default(cuid())
+  name         String
+  description  String   @default("")
+  format       String
+  isSynthetic  Boolean  @default(false)
+  sourcePath   String
+  cachePath    String?
+  pointCount   Int      @default(0)
+  frameCount   Int      @default(1)
+  upAxis       String   @default("Z")
+  recordSchema Json?
+  metadata     Json
+  createdById  String
+  createdAt    DateTime @default(now())
+
+  createdBy User           @relation(fields: [createdById], references: [id])
+  tasks     TaskTemplate[]
+
+  @@index([createdById])
+}
+
+model TaskTemplate {
+  id                       String         @id @default(cuid())
+  code                     String         @unique
+  programId                String
+  title                    String
+  description              String         @default("")
+  objective                String         @default("")
+  learningOutcome          String         @default("")
+  difficulty               Difficulty     @default(BEGINNER)
+  prerequisiteTaskId       String?
+  annotationType           AnnotationType
+  estimatedMinutes         Int            @default(10)
+  instructions             String         @default("")
+  assetId                  String
+  expectedOutput           String         @default("")
+  scoringCriteria          Json
+  referenceAnnotation      Json?
+  initialAnnotation        Json?
+  commonMistakes           Json
+  hints                    Json
+  reviewerRubric           Json
+  isPublished              Boolean        @default(false)
+  isRequiredForCertification Boolean      @default(false)
+  trackKey                 String?
+  order                    Int            @default(0)
+
+  program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  asset        PointCloudAsset @relation(fields: [assetId], references: [id])
+  prerequisite TaskTemplate?   @relation("TaskPrereq", fields: [prerequisiteTaskId], references: [id], onDelete: SetNull)
+  dependents   TaskTemplate[]  @relation("TaskPrereq")
+  assignments  TaskAssignment[]
+
+  @@index([programId, order])
+  @@index([assetId])
+}
+
+model TaskAssignment {
+  id           String           @id @default(cuid())
+  taskId       String
+  userId       String
+  assignedById String?
+  status       AssignmentStatus @default(NOT_STARTED)
+  reviewerId   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  task       TaskTemplate @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user       User         @relation("AssignmentTrainee", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User?        @relation("AssignmentAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  reviewer   User?        @relation("AssignmentReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  draft       AnnotationDraft?
+  versions    SubmissionVersion[]
+  submissions Submission[]
+
+  @@unique([taskId, userId])
+  @@index([userId, status])
+  @@index([reviewerId, status])
+}
+
+model AnnotationDraft {
+  id           String   @id @default(cuid())
+  assignmentId String   @unique
+  data         Json
+  updatedAt    DateTime @updatedAt
+
+  assignment TaskAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+}
+
+model SubmissionVersion {
+  id            String   @id @default(cuid())
+  assignmentId  String
+  versionNumber Int
+  data          Json
+  submittedAt   DateTime @default(now())
+  metrics       Json?
+
+  assignment TaskAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  submission Submission?
+
+  @@unique([assignmentId, versionNumber])
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  assignmentId  String
+  versionId     String           @unique
+  attemptNumber Int
+  status        SubmissionStatus @default(PENDING_REVIEW)
+  submittedAt   DateTime         @default(now())
+  userId        String
+
+  assignment TaskAssignment    @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  version    SubmissionVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  decision   ReviewDecision?
+
+  @@index([status, submittedAt])
+  @@index([userId])
+  @@index([assignmentId])
+}
+
+model ReviewDecision {
+  id                     String             @id @default(cuid())
+  submissionId           String             @unique
+  reviewerId             String
+  decision               ReviewDecisionKind
+  score                  Float?
+  feedback               String             @default("")
+  errorTags              Json
+  correctionInstructions String?
+  createdAt              DateTime           @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewer   User       @relation(fields: [reviewerId], references: [id])
+
+  @@index([reviewerId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String    @default("")
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+model ActivityLog {
+  id         String       @id @default(cuid())
+  userId     String
+  type       ActivityType
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model LearningSession {
+  id         String   @id @default(cuid())
+  userId     String
+  moduleId   String?
+  startedAt  DateTime @default(now())
+  lastPingAt DateTime @default(now())
+  seconds    Int      @default(0)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+}
+
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  programId String
+  issuedAt  DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, programId])
+}
