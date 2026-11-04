@@ -138,52 +138,6 @@ accepted as-is
 
 # Human
 
-2.  Humanoid Robot
-
-3.  Forklift
-
-4.  Pallet Jack
-
-5.  Cart
-
-6.  AGV / AMR
-
-7.  Wheelchair
-
-8.  Vehicle
-
-## **Static Objects**
-
-9.  Pallet
-
-10. Tote
-
-11. Bin
-
-12. Rack
-
-13. Shelf
-
-14. Conveyor
-
-15. Workstation
-
-16. Table
-
-17. Chair
-
-18. Charging Station
-
-19. Dock Door
-
-20. Safety Barrier
-
-21. Machines
-
-22. Boxes
-
-# Human
-
 > A person present in the scene, in any posture or activity (Standing,
 > Walking, Running, Sitting, Kneeling, Bending, In-Wheelchair/ADA,
 > etc.). Cuboid covers the full expected body volume, including any
