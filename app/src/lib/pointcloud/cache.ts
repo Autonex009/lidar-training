@@ -51,7 +51,8 @@ export function encodeCache(cloud: NormalizedCloud): Uint8Array {
 
 /** Works in browser and Node. */
 export function parseCache(buffer: ArrayBuffer | Uint8Array): NormalizedCloud {
-  const u8 = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  // Node Buffers override slice() with a non-copying view; always view as a plain Uint8Array.
+  const u8 = buffer instanceof Uint8Array ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
   if (u8.length < 8 || MAGIC.some((m, i) => u8[i] !== m)) throw new PointCloudParseError("Not a point-cloud cache file (bad magic)");
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
   const hl = dv.getUint32(4, true);
@@ -72,3 +73,11 @@ export function parseCache(buffer: ArrayBuffer | Uint8Array): NormalizedCloud {
 }
 
 export const frameFileName = (i: number) => `frame_${String(i).padStart(3, "0")}.bin`;
+
+export const frameNoLabelsFileName = (i: number) => frameFileName(i).replace(/\.bin$/, ".nolabels.bin");
+
+/** Re-encodes a cache buffer without per-point semantic/instance labels (hasLabels=false). */
+export function stripLabelsFromCache(buffer: ArrayBuffer | Uint8Array): Uint8Array {
+  const cloud = parseCache(buffer);
+  return encodeCache({ ...cloud, labels: undefined });
+}

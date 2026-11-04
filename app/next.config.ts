@@ -1,9 +1,9 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Pin the workspace root (a stray lockfile in a parent directory otherwise triggers a warning).
+  outputFileTracingRoot: path.join(__dirname),
   turbopack: {
     rules: {
       "*.css": {

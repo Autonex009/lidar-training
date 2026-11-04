@@ -50,3 +50,4 @@ test-results/
 playwright-report/
 prisma/test-integration.db*
 .verify-shots
+prisma/e2e.db*

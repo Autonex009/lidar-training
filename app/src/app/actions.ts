@@ -2,11 +2,13 @@
 
 import { timingSafeEqual } from "node:crypto";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { enrollInActiveProgram } from "@/lib/enroll";
 import { isEmailDomainAllowed, isInviteCodeValid } from "@/lib/registration";
+import { clientIp, isRateLimited, loginLimitPerMinute } from "@/lib/rate-limit";
 import { loginSchema, registerSchema, setupSchema } from "@/lib/schemas";
 
 export interface FormState {
@@ -35,7 +37,10 @@ export async function loginAction(_prev: FormState, fd: FormData): Promise<FormS
   try {
     await signInAndGo(parsed.data.email, parsed.data.password);
   } catch (e) {
-    if (e instanceof AuthError) return { error: "Invalid email or password." };
+    if (e instanceof AuthError) {
+      if (isRateLimited(`login:${clientIp(await headers())}`, loginLimitPerMinute())) return { error: "Too many sign-in attempts. Try again in a minute." };
+      return { error: "Invalid email or password." };
+    }
     throw e;
   }
   return {};

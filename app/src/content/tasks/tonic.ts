@@ -43,7 +43,6 @@ const base = (code: string): TaskTemplateContent => {
 const REQ_ATTRS = ['occlusion', 'motion'];
 const THR = { centerErrorM: 0.3, iou3d: 0.5, yawErrorDeg: 10 };
 const ROI_NOTE = 'ROI rules (measured from the scene origin): ROI1 0-5 m needs perfect boxes, ROI2 0-10 m needs everything labelled, ROI3 beyond 10 m is good-effort and optional if points are poor.';
-const ACTIVITY = 'Set the optional Activity attribute on every Human (for example Standing).';
 const IMG_RULE = 'Project rule to remember: on real data the 3D box must also align with the 2D image. Synthetic scenes have no images.';
 
 const t03: TaskTemplateContent = {
