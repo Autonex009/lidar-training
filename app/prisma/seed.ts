@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { DEMO_PREFIX } from "../src/lib/synthetic/scenes";
+import { loadProjectConfigs } from "../src/lib/project-config";
+import { seedFoundationsContent, seedProjectProgram } from "../src/lib/learn/seed-content";
 import { ensureDemoAssets, demoAssetComplete, writeDemoAsset } from "../src/lib/synthetic/assets-io";
 
 const prisma = new PrismaClient();
@@ -24,8 +26,12 @@ async function seedProgram() {
   return prisma.trainingProgram.upsert({ where: { slug: "foundations" }, create: { slug: "foundations", ...data }, update: data });
 }
 
-async function seedLearning(_programId: string) {
-  // Stage 2: modules, lessons, quizzes.
+async function seedLearning(programId: string) {
+  await seedFoundationsContent(prisma, programId);
+  for (const cfg of loadProjectConfigs()) {
+    const p = await seedProjectProgram(prisma, cfg);
+    console.log(`Seeded project program "${p.name}" (${p.slug})`);
+  }
 }
 
 async function systemUserId(): Promise<string> {

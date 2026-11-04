@@ -30,11 +30,7 @@ export function computeGateForRole(role: Role, learnComplete: boolean): GateStat
 }
 
 export async function getTraineeGateState(userId: string): Promise<GateState> {
-  const program = await db.trainingProgram.findFirst({ where: { isActive: true }, orderBy: { createdAt: "asc" } });
-  if (!program) return computeGateState(false);
-  const enrollment = await db.enrollment.findUnique({
-    where: { userId_programId: { userId, programId: program.id } },
-  });
+  const enrollment = await db.enrollment.findFirst({ where: { userId }, orderBy: { enrolledAt: "asc" } });
   return computeGateState(Boolean(enrollment?.learnCompletedAt));
 }
 

@@ -1,13 +1,19 @@
 import { db } from "@/lib/db";
 
-/** Percentage (0-100) of lessons completed in the active program. 0 when no content yet. */
+/** Pure: completed mandatory modules (+ final assessment) over total, as 0-100. */
+export function computeProgressPercent(mandatoryTotal: number, mandatoryDone: number, finalPassed: boolean): number {
+  const total = mandatoryTotal + 1;
+  return Math.round(((mandatoryDone + (finalPassed ? 1 : 0)) / total) * 100);
+}
+
+/** Learning progress % = completed mandatory modules (+ final assessment) / (mandatory modules + final). */
 export async function getLearningProgressPercent(userId: string): Promise<number> {
-  const program = await db.trainingProgram.findFirst({ where: { isActive: true }, orderBy: { createdAt: "asc" } });
-  if (!program) return 0;
-  const total = await db.lesson.count({ where: { module: { programId: program.id } } });
-  if (total === 0) return 0;
-  const done = await db.lessonProgress.count({
-    where: { userId, lesson: { module: { programId: program.id } } },
+  const enrollment = await db.enrollment.findFirst({ where: { userId }, orderBy: { enrolledAt: "asc" } });
+  if (!enrollment) return 0;
+  const mandatoryTotal = await db.module.count({ where: { programId: enrollment.programId, isMandatory: true } });
+  if (mandatoryTotal === 0) return 0;
+  const done = await db.moduleProgress.count({
+    where: { userId, completedAt: { not: null }, module: { programId: enrollment.programId, isMandatory: true } },
   });
-  return Math.round((done / total) * 100);
+  return computeProgressPercent(mandatoryTotal, done, Boolean(enrollment.learnCompletedAt));
 }
