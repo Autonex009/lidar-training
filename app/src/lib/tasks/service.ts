@@ -4,6 +4,7 @@ import { logActivity } from "@/lib/activity";
 import { annotationDocumentSchema, emptyDocument, parseDocument, toDocCuboid, type AnnotationDocument, type Cuboid } from "@/lib/annotation/types";
 import { validateForSubmit, type Issue } from "@/lib/annotation/validate";
 import { computeMetrics, type ReferenceData } from "@/lib/annotation/metrics";
+import { parseDecisionData } from "@/lib/review/decision-data";
 import { buildWorkspaceTask, rulesFromTask, type TaskConfigJson, type WorkspaceTask } from "./runtime";
 
 export type Result<T> = ({ ok: true } & T) | { ok: false; status: number; error: string; issues?: Issue[] };
@@ -57,7 +58,7 @@ export async function latestFeedback(assignmentId: string): Promise<Feedback | n
   const d = await db.reviewDecision.findFirst({ where: { submission: { assignmentId } }, orderBy: { createdAt: "desc" } });
   if (!d) return null;
   return {
-    decision: d.decision, feedback: d.feedback, errorTags: Array.isArray(d.errorTags) ? (d.errorTags as string[]) : [], correctionInstructions: d.correctionInstructions,
+    decision: d.decision, feedback: d.feedback, errorTags: parseDecisionData(d.errorTags).tags, correctionInstructions: d.correctionInstructions,
     createdAt: d.createdAt.toISOString(), score: d.score,
   };
 }

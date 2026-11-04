@@ -246,12 +246,15 @@ export class ViewerEngine {
     const size = z ? new THREE.Vector3(l, w, h) : new THREE.Vector3(l, h, w);
     const box = new THREE.BoxGeometry(size.x, size.y, size.z);
     const col = new THREE.Color(o.color ?? OVERLAY_LABEL_COLORS[o.label ?? ""] ?? hashColor(o.label ?? o.id));
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(box), new THREE.LineBasicMaterial({ color: col }));
+    const lineMat = o.dashed ? new THREE.LineDashedMaterial({ color: col, dashSize: 0.25, gapSize: 0.15 }) : new THREE.LineBasicMaterial({ color: col });
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(box), lineMat);
+    if (o.dashed) edges.computeLineDistances();
     // heading marker: line from centre to the middle of the +x (front) face
     const head = new THREE.LineSegments(
       new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(size.x / 2, 0, 0)]),
-      edges.material as THREE.LineBasicMaterial,
+      lineMat,
     );
+    if (o.dashed) head.computeLineDistances();
     const solid = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide, transparent: true, opacity: 0.14, color: ACCENT, depthWrite: false }));
     solid.userData.overlayId = o.id;
     // heading arrow at the +length face (shown for the selected box only)

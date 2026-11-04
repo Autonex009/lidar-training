@@ -15,6 +15,8 @@ export interface CuboidOverlay {
   /** CSS colour; defaults to labelColors[label] or a hash colour. */
   color?: string;
   selectable?: boolean;
+  /** Dashed edges (used for the reference overlay in Review). */
+  dashed?: boolean;
 }
 
 export interface CameraState {

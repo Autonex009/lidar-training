@@ -11,6 +11,8 @@ export interface NavItem {
   icon: "learn" | "annotate" | "review" | "complete" | "admin";
   locked: boolean;
   lockReason?: string;
+  /** Small count shown next to the label (e.g. pending reviews for staff). */
+  badge?: number;
 }
 
 const ICONS: Record<NavItem["icon"], ReactNode> = {
@@ -67,6 +69,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
             >
               <Icon name={item.icon} />
               <span className="flex-1">{item.label}</span>
+              {item.badge ? <span data-testid={`nav-badge-${item.label}`} className="rounded-full bg-ink px-1.5 text-[10px] leading-4 text-surface">{item.badge}</span> : null}
             </Link>
           );
         })}
