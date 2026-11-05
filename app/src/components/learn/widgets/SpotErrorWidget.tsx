@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { classColor } from "@/lib/annotation/colors";
 import { seededShuffle } from "@/lib/learn/interactive";
 import { BoxTags } from "./BoxTags";
+import { closeUp } from "./overlays3d";
 import { Feedback } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 
@@ -45,7 +46,7 @@ export function SpotErrorWidget({ onDone, instructions, asset, boxes, config }: 
     }
     const m = misses + 1;
     setMisses(m);
-    setMsg(m >= 2 ? { tone: "hint", text: `That box is fine. Hint: ${prompt.hint}` } : { tone: "bad", text: "That box is correct. Look at the others." });
+    setMsg(m >= 2 ? { tone: "hint", text: `That box is fine. Hint: ${prompt.hint}` } : { tone: "bad", text: "That box is fine. Look at the others." });
     // let the same box be clicked again
     if (clearTimer.current) clearTimeout(clearTimer.current);
     clearTimer.current = setTimeout(() => setSelected(null), 700);
@@ -66,7 +67,7 @@ export function SpotErrorWidget({ onDone, instructions, asset, boxes, config }: 
       </div>
       <div className="h-[400px]">
         {frames ? (
-          <PointCloudViewer ref={api} frames={frames} overlays={overlays} selectedId={selected} onSelect={onSelect} title="Review someone else's boxes">
+          <PointCloudViewer ref={api} frames={frames} overlays={overlays} selectedId={selected} onSelect={onSelect} onFrameChange={() => setTimeout(() => { const e = api.current?.getEngine(); if (e) closeUp(e, 0.6); }, 50)} title="Review someone else's boxes">
             <BoxTags getEngine={getEngine} tags={tags} />
           </PointCloudViewer>
         ) : <p className="text-[13px] text-muted">Demo scene not available.</p>}

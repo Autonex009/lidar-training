@@ -107,6 +107,8 @@ export function LessonView(p: LessonViewProps) {
   const [done, setDone] = useState<Set<string>>(() => new Set(p.initialDone));
   const [completed, setCompleted] = useState(p.completed);
   const sent = useRef(new Set(p.initialDone));
+  /** Saves go one at a time so the server never sees two ticks racing. */
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
 
   const interactive = useMemo(() => p.content.blocks.flatMap((b, i) => (b.type === "interactive" ? [[i, b] as const] : [])), [p.content.blocks]);
   const allKeys = useMemo(() => interactive.flatMap(([, b]) => b.checkpoints.map((c) => c.key)), [interactive]);
@@ -119,9 +121,11 @@ export function LessonView(p: LessonViewProps) {
     setDone((d) => (d.has(key) ? d : new Set(d).add(key)));
     if (p.completed || sent.current.has(key)) return;
     sent.current.add(key);
-    fetch("/api/learn/checkpoint", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ lessonId: p.lessonId, key }) })
-      .then((r) => { if (!r.ok) sent.current.delete(key); })
-      .catch(() => sent.current.delete(key));
+    const body = JSON.stringify({ lessonId: p.lessonId, key });
+    queue.current = queue.current.then(() =>
+      fetch("/api/learn/checkpoint", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body })
+        .then((r) => { if (!r.ok) sent.current.delete(key); })
+        .catch(() => { sent.current.delete(key); }));
   }, [allKeys, p.lessonId, p.completed]);
 
   const markComplete = () =>

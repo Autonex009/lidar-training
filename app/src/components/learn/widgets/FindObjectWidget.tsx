@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { PointCloudViewer, assetFrameSource, type CuboidOverlay, type ViewerApi } from "@/components/viewer";
 import type { FindConfig } from "@/content";
 import { findHit, resolveFindTarget, seededShuffle, type RefBox } from "@/lib/learn/interactive";
+import { closeUp } from "./overlays3d";
 import { Feedback } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 import { useViewerClick } from "./useViewerClick";
@@ -90,7 +91,7 @@ export function FindObjectWidget({ onDone, instructions, asset, refs, config }: 
         </div>
       ) : null}
       <div className="h-[400px]">
-        {frames ? <PointCloudViewer ref={api} frames={frames} overlays={overlays} title="Find the object" /> : <p className="text-[13px] text-muted">Demo scene not available.</p>}
+        {frames ? <PointCloudViewer ref={api} frames={frames} overlays={overlays} onFrameChange={() => setTimeout(() => { const e = api.current?.getEngine(); if (e) closeUp(e, 0.7); }, 50)} title="Find the object" /> : <p className="text-[13px] text-muted">Demo scene not available.</p>}
       </div>
       {msg ? <div className="mt-2"><Feedback tone={msg.tone}>{msg.text}</Feedback></div> : null}
     </div>

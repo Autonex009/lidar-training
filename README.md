@@ -74,6 +74,24 @@ Interpretation ambiguities recorded while converting the Tonic guideline documen
 - Y-up assets are view-only in the annotate tools.
 - Scoring is advisory (class match, centre error, 3D IoU, yaw error, point-label accuracy). The reviewer sets the final score; nothing auto-approves.
 
+## Learn: hands-on lessons
+
+Lessons mix short text with interactive widgets (`LessonBlock` with `type: "interactive"`, `widget` in `src/content/types.ts`). Authored data lives in `app/src/content/interactive.ts`; pure logic (hit tests, scoring, mistake classification) in `app/src/lib/learn/interactive.ts`.
+
+| Widget | Where | What the learner does |
+| --- | --- | --- |
+| `find-object` | M1 (`demo-occlusion`), M3 (`demo-identify`) | "Click the ..." prompts in a seeded random order. A click counts inside the reference cuboid, a region radius, or on empty ground; a hint appears after 2 misses. M3 also asks for the label (must be correct). |
+| `views-drill` | M2, lesson 3 | Switch to Top and count the vehicles, then switch to Front and name the tallest class. |
+| `cuboid-live` | M4 (`demo-cuboid-basic`) | The real `CuboidTool`: drag-create, select/resize handles, move, rotate (Q/E), fit to points, label. A target car pulses; a live readout shows IoU, centre error and yaw error against the reference. "Show my mistakes" tints box faces red (cuts object points) or yellow (empty gap above 20% of the object's size). Guided by the page-scoped `lesson-cuboid` tour. Checkpoints: created, moved, resized, rotated, fit (IoU >= 0.70), label. |
+| `spot-the-error` | M4, M6 (`demo-errors`) | Click the box with the wrong yaw / oversized / wrong class / duplicate. |
+| `decision-cards` | M5 (6 scenarios), M6 (5) | Choose an action, get immediate feedback and the reason. 80% passes; below that, retry only the wrong cards. |
+| `schema` | M3 | Add a class, add an attribute, rename a class, mark an attribute required. |
+| `cloud`, `nav`, `cuboid` (sliders) | older lessons | Still supported. |
+
+Lesson page: a progress strip ("Lesson 2 of 3 · 6 min · 4/6 checkpoints"), a checkpoint checklist beside each widget, "Mark lesson complete" turns lime when every checkpoint is ticked, with a "What's next" line; the last lesson shows "Take the knowledge check" once the module's lessons are done. Checkpoint keys must be unique within a lesson.
+
+Checkpoints are saved server-side: `POST /api/learn/checkpoint {lessonId, key}` upserts the user's `LessonProgress` row with `checkpoints` (JSON array) and no `completedAt`; marking the lesson complete fills `completedAt` on the same row. Rows without `completedAt` never count as a completed lesson. Reloading the page restores the ticks. Re-seeding updates lessons in place (keyed by module key and lesson order), so progress rows survive.
+
 ## Guided tours
 
 Step-by-step onboarding dialogs (intro modal, then bottom-centre step cards over the live page) in the style of the reference screenshots. A step completes only when the user actually does the action; Back / progress dots / Next sit at the bottom, Next is enabled once the step is done (or immediately for informational steps), Enter = Next, Esc or the X = skip (with confirmation). Optional spotlight dims everything except a `data-tour="..."` element.
@@ -88,6 +106,7 @@ Step-by-step onboarding dialogs (intro modal, then bottom-centre step cards over
 | `task-inspection` | first INSPECTION task | 5-6 | checkpoints (Next), `control:preset` x2, `tool:mark`, `setAnswer`, `draft-saved` |
 | `task-identification` | first IDENTIFICATION task | 6-7 | `select`, `setLabel`, `addFlag` (optional), `setAnswer`, `draft-saved` |
 | `task-error-detection` | first ERROR_DETECTION task | 6 | `select`, `addError`, second `addError` (optional), `draft-saved` |
+| `lesson-cuboid` | live cuboid exercise in Learn M4 (page-scoped, auto-starts once) | 7 | `lc:created`, `lc:moved`, `lc:resized`, `lc:rotated`, `lc:fit-clicked`, `lc:labelled`, then an informational step on the mistakes overlay |
 | `review-first-open` | first `/review/[id]` (REVIEWER, ADMIN) | 7-8 | Next, `toggle-reference`, `select-object`, decision form / rubric explained |
 
 - **Progress** is per user in `TourProgress` (`NOT_STARTED / IN_PROGRESS / COMPLETED / SKIPPED`, `lastStepIndex`), written by `POST /api/tours/[key]` (debounced 500 ms while stepping, immediately on finish/skip; read with `GET /api/tours`). Transitions log `TOUR_STARTED`, `TOUR_COMPLETED`, `TOUR_SKIPPED` in the activity log. COMPLETED and SKIPPED never auto-start again; IN_PROGRESS shows a small "Resume tutorial" pill instead of a modal.
@@ -117,7 +136,7 @@ npm run lint
 
 `npm run test:e2e` starts its own `next dev` on port 3210 (`E2E_PORT` to change) with `DATABASE_URL=file:./e2e.db` (recreated every run). Global setup runs `prisma migrate deploy`, `assets:generate` if assets are missing, `prisma db seed`, creates the admin through the real `/setup` form and a reviewer through the admin API. Specs run serially and share state through the database:
 
-- T1 new trainee (register, locked items inert) - T2 progression persists across logout/login - T3 failed final assessment keeps the lock - T4 pass unlocks, topbar 100% - T5 annotate TASK-03 (real mouse drag on the canvas, relabel, save, reload, submit) - T6 reviewer requests revision - T7 trainee sees notification and banner, resubmits (attempt 2) - T8 approval with score appears in Complete - T9 admin timeline has LOGIN, LESSON_COMPLETED, QUIZ_ATTEMPTED, TASK_SUBMITTED, REVISION_REQUESTED, TASK_APPROVED - T10 ownership, role and ground-truth leak checks - T11 guided tours (welcome tour, navigation tour with real mouse/keyboard actions, first-task cuboid tour with skip/resume/restart, Help menu, reviewer tour). Other specs mark all tours COMPLETED for their users through fixtures so dialogs never block them.
+- T1 new trainee (register, locked items inert) - T2 progression persists across logout/login - T3 failed final assessment keeps the lock - T4 pass unlocks, topbar 100% - T5 annotate TASK-03 (real mouse drag on the canvas, relabel, save, reload, submit) - T6 reviewer requests revision - T7 trainee sees notification and banner, resubmits (attempt 2) - T8 approval with score appears in Complete - T9 admin timeline has LOGIN, LESSON_COMPLETED, QUIZ_ATTEMPTED, TASK_SUBMITTED, REVISION_REQUESTED, TASK_APPROVED - T10 ownership, role and ground-truth leak checks - T12 hands-on Learn widgets (find-object clicks via the dev `window.__engines` projection, live cuboid with its guided steps, decision cards with a retry, checkpoints surviving a reload) - T11 guided tours (welcome tour, navigation tour with real mouse/keyboard actions, first-task cuboid tour with skip/resume/restart, Help menu, reviewer tour). Other specs mark all tours COMPLETED for their users through fixtures so dialogs never block them.
 
 Fixtures that would take too long through the UI (completing all mandatory modules for T3, approving prerequisite tasks, creating the second trainee) use the service layer or Prisma directly; every assertion is made through the UI or HTTP.
 
@@ -152,7 +171,7 @@ WebGL caveat: headless Chromium uses SwiftShader (`--use-gl=swiftshader`), which
 - The login rate limit is an in-memory per-process counter keyed by IP: it resets on restart and is not shared across instances. The IP comes from `X-Forwarded-For`/`X-Real-IP`, so it is only trustworthy behind a proxy that sets them.
 - Notifications are in-app only (no email).
 - The certificate is a print stylesheet page; no PDF generation.
-- Lesson checkpoint state is client-only; a reload mid-lesson resets it.
+- Interactive widget progress other than checkpoints (e.g. which find-object prompt you are on, decision-card answers) is not saved; a reload restarts the widget, but ticked checkpoints stay ticked.
 - No deactivate-user action.
 - Re-importing project configs/seed content overwrites admin edits to that content.
 - Any signed-in user can fetch any asset by id (frames are label-stripped for trainees, but assets are not scoped per program).

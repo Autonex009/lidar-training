@@ -59,6 +59,14 @@ describe("lesson checkpoint persistence (temp SQLite)", () => {
     expect(await db.lessonProgress.count({ where: { userId, lessonId } })).toBe(1);
   });
 
+  it("ticks that arrive together are all kept", async () => {
+    const m3 = await db.module.findFirstOrThrow({ where: { programId, key: "m1-lidar" }, include: { lessons: { orderBy: { order: "asc" } } } });
+    const l = m3.lessons[1];
+    await Promise.all(["find-dense", "find-sparse", "find-ground"].map((k) => svc.recordCheckpoint(otherId, "TRAINEE", l.id, k)));
+    expect([...(await svc.getCheckpoints(otherId, l.id))].sort()).toEqual(["find-dense", "find-ground", "find-sparse"]);
+    await db.lessonProgress.deleteMany({ where: { userId: otherId } });
+  });
+
   it("is per user", async () => {
     expect(await svc.getCheckpoints(otherId, lessonId)).toEqual([]);
   });

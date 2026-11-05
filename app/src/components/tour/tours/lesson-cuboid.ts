@@ -28,7 +28,7 @@ export const lessonCuboidTour: TourDefinition = {
     },
     {
       key: "resize", title: "Resize it",
-      instruction: "Press **V** (select) and drag a lime handle on a face, or hold **Shift** and use the arrow keys.",
+      instruction: "Press **V** (select) and drag a blue handle on a face, or hold **Shift** and use the arrow keys.",
       keycaps: ["V", "/", { glyph: "shift" }, "+", { glyph: "arrow-up" }],
       spotlight: { selector: "lc-canvas", padding: 2 }, placement: "near-target",
       complete: { kind: "event", event: "lc:resized" },

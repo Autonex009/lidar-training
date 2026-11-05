@@ -106,3 +106,11 @@ export class MistakeOverlay {
 
   dispose() { this.clear(); this.engine.removeFromRoot(this.group); }
 }
+
+/** Move the camera closer to its current target (a scene's default fit leaves small objects tiny). */
+export function closeUp(engine: ViewerEngine, factor = 0.6) {
+  const target = engine.getCamera().target;
+  const tw = engine.root.localToWorld(new THREE.Vector3(...target));
+  engine.camera.position.sub(tw).multiplyScalar(factor).add(tw);
+  engine.setTarget(target);
+}

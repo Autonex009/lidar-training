@@ -166,11 +166,15 @@ export async function recordCheckpoint(userId: string, role: Role, lessonId: str
   if (err) return { ok: false, error: err };
   await openModule(userId, lesson.moduleId);
   const where = { userId_lessonId: { userId, lessonId } };
-  const row = await db.lessonProgress.findUnique({ where });
-  const have = asKeys(row?.checkpoints);
-  if (have.includes(key)) return { ok: true, checkpoints: have };
-  const next = [...have, key];
-  await db.lessonProgress.upsert({ where, create: { userId, lessonId, checkpoints: next }, update: { checkpoints: next } });
+  // read-modify-write inside a transaction so two ticks arriving together cannot overwrite each other
+  const next = await db.$transaction(async (tx) => {
+    const row = await tx.lessonProgress.findUnique({ where });
+    const have = asKeys(row?.checkpoints);
+    if (have.includes(key)) return have;
+    const merged = [...have, key];
+    await tx.lessonProgress.upsert({ where, create: { userId, lessonId, checkpoints: merged }, update: { checkpoints: merged } });
+    return merged;
+  });
   return { ok: true, checkpoints: next };
 }
 
