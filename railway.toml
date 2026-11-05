@@ -1,0 +1,10 @@
+# Railway: deploy from repo root with the Dockerfile. Attach a volume mounted at /data (Service → Volumes).
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "sh ./start.sh"
+healthcheckPath = "/login"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"

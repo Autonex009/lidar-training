@@ -5,7 +5,8 @@ import { frameFileName } from "../pointcloud/cache";
 import { DEMO_SCENE_KEYS, buildDemoScene } from "./scenes";
 import type { ReferenceAnnotation } from "./types";
 
-export const assetsRoot = () => path.join(process.cwd(), "data", "assets");
+export const assetsRoot = () =>
+  process.env.ASSETS_DIR ? path.resolve(process.env.ASSETS_DIR) : path.join(process.cwd(), "data", "assets");
 
 const b64 = (a: Uint16Array) => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString("base64");
 export function unb64(s: string): Uint16Array {

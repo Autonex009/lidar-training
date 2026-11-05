@@ -142,6 +142,23 @@ Fixtures that would take too long through the UI (completing all mandatory modul
 
 WebGL caveat: headless Chromium uses SwiftShader (`--use-gl=swiftshader`), which is slow but works; the canvas drag in T5 is a real mouse drag. The dev-only `window.__engine` hook (disabled when `NODE_ENV=production`) is used only to compute screen coordinates of known ground points and to wait for the cloud to load; if the drag proves flaky on a given machine, creating the box through that hook is the fallback. No step currently depends on it for the action itself.
 
+## Deploy to Railway (or any Docker host with a volume)
+
+The app runs as-is with SQLite and local point-cloud caches; it only needs a persistent disk. The repo root has a `Dockerfile`, `.dockerignore` and `railway.toml`.
+
+1. Railway → New Project → Deploy from GitHub repo → `vinayak0999/LiDAR`, branch `main`. Keep the root directory at the repo root (the Dockerfile copies `app/` and `project-configs/`).
+2. Service → **Volumes** → add a volume mounted at `/data`.
+3. Service → **Variables**:
+   - `AUTH_SECRET` = output of `openssl rand -base64 32`
+   - `SETUP_TOKEN` = a long random string, used once on `/setup`
+   - `ALLOWED_EMAIL_DOMAINS` = e.g. `encord.com` (empty = any domain may register)
+   - optional `REGISTRATION_INVITE_CODE`, `DEFAULT_PROGRAM_SLUG`
+   - already set in the image: `DATABASE_URL=file:/data/portal.db`, `ASSETS_DIR=/data/assets`, `AUTH_TRUST_HOST=true`
+4. Settings → Networking → Generate Domain. First boot runs `prisma migrate deploy`, generates the 10 synthetic demo scenes into the volume, seeds programs/lessons/tasks (idempotent), then starts Next.
+5. Open `https://<domain>/setup`, enter `SETUP_TOKEN`, create the administrator. Trainees register at `/register`; make reviewers in Admin → Users.
+
+Notes: one container instance only (SQLite). Redeploys keep the database and caches because they live on the volume. The Vercel serverless platform is not supported without switching to Postgres and blob storage.
+
 ## Deployment
 
 - Postgres: in `app/prisma/schema.prisma` change the datasource `provider` to `"postgresql"`, set `DATABASE_URL="postgresql://user:pass@host:5432/db?schema=public"`, then run `npx prisma migrate deploy`. The committed migrations are SQLite-generated; for a fresh Postgres database regenerate a baseline (`prisma migrate dev --name init` against Postgres) and commit it. JSON columns map to `jsonb`.
