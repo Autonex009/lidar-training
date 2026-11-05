@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Checklist } from "./Parts";
 import type { WidgetProps } from "./types";
 
 interface Attr { id: number; name: string; required: boolean }
@@ -23,7 +22,7 @@ function initial(schema: SchemaInput | null, next: () => number): Cls[] {
 }
 
 /** Editable schema table (local state only): the schema is configuration, not code. */
-export function SchemaWidget({ checkpoints, done, onDone, instructions, schema }: WidgetProps & { schema: SchemaInput | null }) {
+export function SchemaWidget({ checkpoints, onDone, instructions, schema }: WidgetProps & { schema: SchemaInput | null }) {
   const counter = useRef(1);
   const next = () => counter.current++;
   const [rows, setRows] = useState<Cls[]>(() => initial(schema, next));
@@ -31,7 +30,7 @@ export function SchemaWidget({ checkpoints, done, onDone, instructions, schema }
 
   const fire = (key: string) => {
     const known = checkpoints.some((c) => c.key === key);
-    for (const c of checkpoints) if (c.key === key || (!known && !["add-class", "add-attribute", "set-required"].includes(c.key))) onDone(c.key);
+    for (const c of checkpoints) if (c.key === key || (!known && !["add-class", "add-attribute", "set-required", "rename-class"].includes(c.key))) onDone(c.key);
   };
   const addClass = () => { setRows((r) => [...r, { id: next(), name: `New class ${r.length + 1}`, attrs: [] }]); fire("add-class"); };
   const addAttr = (cid: number) => {
@@ -60,7 +59,7 @@ export function SchemaWidget({ checkpoints, done, onDone, instructions, schema }
               <tr key={c.id} className="align-top">
                 <td className="border-b border-line px-2 py-1.5">
                   <input aria-label="Class name" className="w-full rounded border border-line px-1.5 py-1" value={c.name}
-                    onChange={(e) => { const v = e.target.value; setRows((r) => r.map((x) => (x.id === c.id ? { ...x, name: v } : x))); }} />
+                    onChange={(e) => { const v = e.target.value; setRows((r) => r.map((x) => (x.id === c.id ? { ...x, name: v } : x))); if (v.trim()) fire("rename-class"); }} />
                 </td>
                 <td className="border-b border-line px-2 py-1.5">
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -81,7 +80,6 @@ export function SchemaWidget({ checkpoints, done, onDone, instructions, schema }
         </table>
       </div>
       <div className="mt-2"><Button onClick={addClass}>Add class</Button><span className="ml-2 text-[12px] text-muted">Changes here are local to this exercise.</span></div>
-      <Checklist checkpoints={checkpoints} done={done} />
     </div>
   );
 }

@@ -195,7 +195,10 @@ model LessonProgress {
   id          String   @id @default(cuid())
   userId      String
   lessonId    String
-  completedAt DateTime @default(now())
+  /// Null while only checkpoints have been recorded; set when the lesson is marked complete.
+  completedAt DateTime?
+  /// Interactive checkpoint keys ticked so far (JSON array of strings).
+  checkpoints Json?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)

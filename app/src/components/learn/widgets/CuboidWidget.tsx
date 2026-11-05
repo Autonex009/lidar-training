@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Vector3 } from "three";
 import { PointCloudViewer, assetFrameSource, type CuboidOverlay, type ViewerApi } from "@/components/viewer";
 import { iou3d, type Box } from "@/lib/geometry/cuboid";
-import { Checklist } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 
 export interface ReferenceBox { center: [number, number, number]; dims: [number, number, number]; yaw: number; label: string }
@@ -25,7 +24,7 @@ function Slider({ label, value, min, max, step, onChange, unit = "" }: { label: 
 }
 
 /** Not the annotation tool: one editable box driven by sliders, scored against one reference object. */
-export function CuboidWidget({ checkpoints, done, onDone, instructions, asset, reference }: WidgetProps & { asset: AssetRef | null; reference: ReferenceBox | null }) {
+export function CuboidWidget({ onDone, instructions, asset, reference }: WidgetProps & { asset: AssetRef | null; reference: ReferenceBox | null }) {
   const frames = useMemo(() => (asset ? assetFrameSource(asset.assetId, asset.frameCount) : null), [asset]);
   const ref = reference;
   const groundZ = ref ? ref.center[2] - ref.dims[2] / 2 : 0;
@@ -85,7 +84,6 @@ export function CuboidWidget({ checkpoints, done, onDone, instructions, asset, r
           <div className="flex gap-3"><button type="button" className="text-[12px] underline" onClick={() => setS(init)}>Reset box</button><button type="button" className="text-[12px] underline" onClick={focus}>Focus camera on the car</button></div>
         </div>
       </div>
-      <Checklist checkpoints={checkpoints} done={done} />
     </div>
   );
 }

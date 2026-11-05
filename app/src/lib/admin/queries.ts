@@ -101,7 +101,7 @@ export async function getTraineeDetail(userId: string) {
   const [modules, modProgress, lessonProgress, attempts, assignments, sessions, programs] = await Promise.all([
     db.module.findMany({ where: { programId: { in: programIds } }, orderBy: [{ programId: "asc" }, { order: "asc" }], include: { _count: { select: { lessons: true } } } }),
     db.moduleProgress.findMany({ where: { userId } }),
-    db.lessonProgress.findMany({ where: { userId }, select: { lesson: { select: { moduleId: true } } } }),
+    db.lessonProgress.findMany({ where: { userId, completedAt: { not: null } }, select: { lesson: { select: { moduleId: true } } } }),
     db.quizAttempt.findMany({ where: { userId }, orderBy: { finishedAt: "desc" }, include: { module: { select: { title: true } } } }),
     db.taskAssignment.findMany({
       where: { userId }, orderBy: { task: { order: "asc" } },

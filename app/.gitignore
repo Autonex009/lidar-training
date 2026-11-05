@@ -54,4 +54,5 @@ prisma/e2e.db*
 
 # guided tours tests / alternate Next output dirs
 prisma/test-tours.db*
+prisma/test-checkpoints.db*
 /.next-*

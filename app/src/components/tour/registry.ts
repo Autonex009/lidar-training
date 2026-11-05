@@ -3,9 +3,10 @@ import { welcomeTour } from "./tours/welcome";
 import { navigationTour } from "./tours/navigation-3d";
 import { taskCuboidTour, taskErrorDetectionTour, taskIdentificationTour, taskInspectionTour, taskSegmentationTour, taskTrackingTour } from "./tours/tasks";
 import { reviewFirstOpenTour } from "./tours/review";
+import { lessonCuboidTour } from "./tours/lesson-cuboid";
 
 export const TOURS: Record<string, TourDefinition> = Object.fromEntries(
-  [welcomeTour, navigationTour, taskCuboidTour, taskSegmentationTour, taskTrackingTour, taskInspectionTour, taskIdentificationTour, taskErrorDetectionTour, reviewFirstOpenTour].map((t) => [t.key, t]),
+  [welcomeTour, navigationTour, taskCuboidTour, taskSegmentationTour, taskTrackingTour, taskInspectionTour, taskIdentificationTour, taskErrorDetectionTour, reviewFirstOpenTour, lessonCuboidTour].map((t) => [t.key, t]),
 );
 
 /** Tour key for the first open of a task of this annotation type. */

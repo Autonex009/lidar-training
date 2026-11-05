@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { PointCloudViewer, assetFrameSource, type ControlKind } from "@/components/viewer";
 import { usePageTours } from "@/components/tour/PageTours";
-import { Checklist } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 
 const KIND_KEYS = new Set(["rotate", "pan", "zoom"]);
@@ -35,7 +34,6 @@ export function CloudWidget({ checkpoints, done, onDone, instructions, asset }: 
     <div>
       <p className="mb-2 text-[13px]">{instructions}</p>
       <div className="h-[380px]">{frames ? <PointCloudViewer frames={frames} onControlUsed={used} title="Sample cloud" /> : <p className="text-[13px] text-muted">Demo scene not available.</p>}</div>
-      <Checklist checkpoints={checkpoints} done={done} />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { M1_FIND, M2_DRILL, M3_FIND, M4_SPOT, M5_CARDS, M6_CARDS, M6_SPOT } from "./interactive";
 import type { ModuleContent, ProgramContent, QuizQuestionContent } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -64,7 +65,7 @@ const m1: ModuleContent = {
     {
       kind: "INTERACTIVE_CLOUD",
       title: "Reading a point cloud",
-      estimatedMinutes: 4,
+      estimatedMinutes: 6,
       blocks: [
         {
           type: "explain",
@@ -86,6 +87,19 @@ const m1: ModuleContent = {
           ],
           instructions:
             "Rotate and zoom the sample cloud. Find the ground, then find one object that stands out from it.",
+        },
+        {
+          type: "interactive",
+          widget: "find-object",
+          sceneKey: "demo-occlusion",
+          find: M1_FIND,
+          checkpoints: [
+            { key: "find-ped", label: "Find the nearest pedestrian" },
+            { key: "find-dense", label: "Find the densest vehicle" },
+            { key: "find-sparse", label: "Find the far, sparse vehicle" },
+            { key: "find-ground", label: "Click the ground, not an object" },
+          ],
+          instructions: "Four prompts, in a random order. Click what each one asks for. After two misses you get a hint.",
         },
         {
           type: "example",
@@ -195,7 +209,7 @@ const m2: ModuleContent = {
   key: "m2-navigation",
   title: "Navigating a 3D Scene",
   summary: "Rotate, pan, zoom, reset, and use top, front and side views to check every judgement.",
-  estimatedMinutes: 9,
+  estimatedMinutes: 12,
   isMandatory: true,
   lessons: [
     {
@@ -300,6 +314,42 @@ const m2: ModuleContent = {
         },
       ],
     },
+    {
+      kind: "INTERACTIVE_NAV",
+      title: "Drill: check a scene with the views",
+      estimatedMinutes: 4,
+      blocks: [
+        {
+          type: "explain",
+          heading: "Use the view that answers the question",
+          body: [
+            "Counting footprints is a top-view job. Judging height is a front or side job.",
+            "Answer two quick questions about the demo scene. You must switch views to answer them.",
+          ],
+        },
+        {
+          type: "interactive",
+          widget: "views-drill",
+          sceneKey: "demo-nav",
+          drill: M2_DRILL,
+          checkpoints: [
+            { key: "top-view", label: "Switch to Top view" },
+            { key: "top-count", label: "Count the vehicles correctly" },
+            { key: "front-view", label: "Switch to Front view" },
+            { key: "front-tallest", label: "Name the tallest class" },
+          ],
+          instructions: "Follow the prompt above the viewer. The next question unlocks when you have switched to the right view.",
+        },
+        {
+          type: "remember",
+          items: [
+            "Top view for counting and heading. Front and side views for height.",
+            "A question about height cannot be answered from the top.",
+            "Switch views before you answer, every time.",
+          ],
+        },
+      ],
+    },
   ],
   quiz: {
     questions: [
@@ -366,7 +416,7 @@ const m3: ModuleContent = {
     {
       kind: "TEXT",
       title: "Objects, classes and attributes",
-      estimatedMinutes: 4,
+      estimatedMinutes: 6,
       blocks: [
         {
           type: "explain",
@@ -385,6 +435,19 @@ const m3: ModuleContent = {
           ],
         },
         { type: "figure", kind: "svg", id: "fg-bg", caption: "Only listed foreground objects get labels." },
+        {
+          type: "interactive",
+          widget: "find-object",
+          sceneKey: "demo-identify",
+          find: M3_FIND,
+          checkpoints: [
+            { key: "id-pole", label: "Find and name the thin, tall object" },
+            { key: "id-person", label: "Find and name the small upright object" },
+            { key: "id-vehicle", label: "Find and name the long, low object" },
+            { key: "id-unknown", label: "Find the object you cannot name, and label it honestly" },
+          ],
+          instructions: "Click the object each prompt describes, then pick its label from the list. A wrong label does not count.",
+        },
         {
           type: "example",
           heading: "Practical example",
@@ -431,10 +494,11 @@ const m3: ModuleContent = {
           checkpoints: [
             { key: "add-class", label: "Add a new class to the example schema" },
             { key: "add-attribute", label: "Add an attribute to a class" },
+            { key: "rename-class", label: "Rename a class" },
             { key: "set-required", label: "Mark an attribute as required" },
           ],
           instructions:
-            "Edit the example schema. Add a class, add an attribute, then mark one as required.",
+            "Edit the example schema. Add a class, add an attribute, rename a class, then mark one as required.",
         },
         {
           type: "example",
@@ -530,7 +594,7 @@ const m4: ModuleContent = {
   key: "m4-cuboids",
   title: "Understanding 3D Bounding Boxes",
   summary: "Centre, size and yaw. How to draw a box that is tight, complete and correctly oriented.",
-  estimatedMinutes: 15,
+  estimatedMinutes: 19,
   isMandatory: true,
   lessons: [
     {
@@ -577,28 +641,30 @@ const m4: ModuleContent = {
     {
       kind: "INTERACTIVE_CUBOID",
       title: "Draw a cuboid",
-      estimatedMinutes: 5,
+      estimatedMinutes: 7,
       blocks: [
         {
           type: "explain",
-          heading: "Four steps, in this order",
+          heading: "Five steps, in this order",
           body: [
-            "Move the box onto the object. Resize it to cover all points. Rotate it to match the heading.",
-            "Then fit: check every view and tighten until no points stick out.",
+            "Draw a box and move it onto the object. Resize it to cover all points. Rotate it to match the heading.",
+            "Then fit: check every view and tighten until no points stick out. Finally, set the label.",
           ],
         },
         {
           type: "interactive",
-          widget: "cuboid",
-          sceneKey: "demo-cuboid",
+          widget: "cuboid-live",
+          sceneKey: "demo-cuboid-basic",
           checkpoints: [
-            { key: "move", label: "Move the box onto the object" },
-            { key: "resize", label: "Resize the box" },
-            { key: "rotate", label: "Rotate the box to match the heading" },
-            { key: "fit", label: "Fit the box tightly around all points" },
+            { key: "created", label: "Draw a box by dragging on the ground" },
+            { key: "moved", label: "Move the box onto the car" },
+            { key: "resized", label: "Resize the box" },
+            { key: "rotated", label: "Rotate it to the car's heading (Q / E)" },
+            { key: "fit", label: "Fit it so IoU is 0.70 or better" },
+            { key: "label", label: "Set the label to Vehicle" },
           ],
           instructions:
-            "Complete the four steps on the demo object. Check top and side views before you finish.",
+            "These are the real annotation tools. Draw a box around the pulsing car, then refine it until the fit readout reaches 0.70. Turn on Show my mistakes to see where the box is loose or cuts points.",
         },
         {
           type: "example",
@@ -629,7 +695,7 @@ const m4: ModuleContent = {
     {
       kind: "TEXT",
       title: "Tight, not tiny",
-      estimatedMinutes: 4,
+      estimatedMinutes: 6,
       blocks: [
         {
           type: "explain",
@@ -641,6 +707,18 @@ const m4: ModuleContent = {
         },
         { type: "figure", kind: "svg", id: "box-too-big", caption: "Too big: empty space around the object." },
         { type: "figure", kind: "svg", id: "box-cuts-points", caption: "Too small: points stick out of the box." },
+        {
+          type: "interactive",
+          widget: "spot-the-error",
+          sceneKey: "demo-errors",
+          spot: M4_SPOT,
+          checkpoints: [
+            { key: "spot-yaw", label: "Find the box with a wrong yaw" },
+            { key: "spot-big", label: "Find the oversized box" },
+            { key: "spot-class", label: "Find the box with the wrong class" },
+          ],
+          instructions: "Someone else annotated this scene and made mistakes. Click the box each prompt asks about.",
+        },
         {
           type: "example",
           heading: "Practical example",
@@ -750,7 +828,7 @@ const m5: ModuleContent = {
   key: "m5-difficult",
   title: "Difficult Annotation Situations",
   summary: "Occlusion, sparse points, touching objects and ambiguity. Use evidence, flag the rest.",
-  estimatedMinutes: 14,
+  estimatedMinutes: 18,
   isMandatory: true,
   lessons: [
     {
@@ -873,6 +951,39 @@ const m5: ModuleContent = {
         },
       ],
     },
+    {
+      kind: "TEXT",
+      title: "Practice: what would you do?",
+      estimatedMinutes: 6,
+      blocks: [
+        {
+          type: "explain",
+          heading: "Six judgement calls",
+          body: [
+            "Each card describes a situation from a real scan. Choose what you would do and you will see why straight away.",
+            "You need 80% to pass. If you miss some, retry only those.",
+          ],
+        },
+        {
+          type: "interactive",
+          widget: "decision-cards",
+          cards: M5_CARDS,
+          checkpoints: [
+            { key: "answered", label: "Answer all six scenarios" },
+            { key: "passed", label: "Score 80% or more" },
+          ],
+          instructions: "Pick one option per scenario.",
+        },
+        {
+          type: "remember",
+          items: [
+            "Follow the project rule first. If it is silent, box what the points support and flag it.",
+            "One object, one box. Touching is fine, large overlap is not.",
+            "Artifacts such as mirror ghosts are not objects.",
+          ],
+        },
+      ],
+    },
   ],
   quiz: {
     questions: [
@@ -960,13 +1071,13 @@ const m6: ModuleContent = {
   key: "m6-quality",
   title: "Annotation Quality and Professional Workflow",
   summary: "A repeatable routine: annotate, self-check, flag, submit, then learn from feedback.",
-  estimatedMinutes: 10,
+  estimatedMinutes: 12,
   isMandatory: true,
   lessons: [
     {
       kind: "TEXT",
       title: "The self-check routine",
-      estimatedMinutes: 4,
+      estimatedMinutes: 6,
       blocks: [
         {
           type: "explain",
@@ -985,6 +1096,16 @@ const m6: ModuleContent = {
             "Is yaw right in top view?",
             "Is there exactly one box per object?",
           ],
+        },
+        {
+          type: "interactive",
+          widget: "decision-cards",
+          cards: M6_CARDS,
+          checkpoints: [
+            { key: "answered", label: "Answer all five pre-submit scenarios" },
+            { key: "passed", label: "Score 80% or more" },
+          ],
+          instructions: "Run through five moments just before you submit. Choose the professional response.",
         },
         {
           type: "example",
@@ -1015,7 +1136,7 @@ const m6: ModuleContent = {
     {
       kind: "TEXT",
       title: "Flag, submit and learn from feedback",
-      estimatedMinutes: 4,
+      estimatedMinutes: 6,
       blocks: [
         {
           type: "explain",
@@ -1032,6 +1153,18 @@ const m6: ModuleContent = {
             "Reviewers return comments. Fix each one, then check the whole scene again.",
             "Look for the pattern behind the comment, so you stop making the same mistake.",
           ],
+        },
+        {
+          type: "interactive",
+          widget: "spot-the-error",
+          sceneKey: "demo-errors",
+          spot: M6_SPOT,
+          checkpoints: [
+            { key: "spot-class", label: "Find the box with the wrong class" },
+            { key: "spot-dup", label: "Find the object with two boxes" },
+            { key: "spot-yaw", label: "Find the box with a wrong yaw" },
+          ],
+          instructions: "Play the reviewer. Find the mistakes before they reach one.",
         },
         {
           type: "example",

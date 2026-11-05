@@ -72,10 +72,21 @@ export const PointCloudViewer = forwardRef<ViewerApi, PointCloudViewerProps>(fun
       onError: (e) => setError(e.message),
     };
     engineRef.current = eng;
+    // dev-only hooks so e2e scripts can project known scene points to screen coordinates (`__engine` = newest viewer,
+    // `__engines` = all live viewers; a page may hold several, e.g. a Learn lesson with two widgets)
+    if (process.env.NODE_ENV !== "production") {
+      const w = window as unknown as { __engine?: unknown; __engines?: ViewerEngine[] };
+      w.__engine = eng;
+      w.__engines = [...(w.__engines ?? []), eng];
+    }
     eng.setFrameSource(sourceInit.current);
     setError(null);
     void eng.setFrame(0);
-    return () => { eng.dispose(); engineRef.current = null; };
+    return () => {
+      if (process.env.NODE_ENV !== "production") { const w = window as unknown as { __engines?: ViewerEngine[] }; w.__engines = (w.__engines ?? []).filter((x) => x !== eng); }
+      eng.dispose();
+      engineRef.current = null;
+    };
   }, [upAxis]);
 
   const profileInit = useRef(profile), sizeInit = useRef(pointSize), axesInit = useRef(showAxes), gridInit = useRef(showGrid), modeInit = useRef(colorMode), sourceInit = useRef(source);

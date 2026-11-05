@@ -48,7 +48,7 @@ export async function getLearnOverview(userId: string, role: Role): Promise<Lear
     include: { _count: { select: { lessons: true, questions: true } } },
   });
   const [lessonProgress, moduleProgress, attempts, finalAttempts, finalCount] = await Promise.all([
-    db.lessonProgress.findMany({ where: { userId, lesson: { module: { programId: program.id } } }, select: { lesson: { select: { moduleId: true } } } }),
+    db.lessonProgress.findMany({ where: { userId, completedAt: { not: null }, lesson: { module: { programId: program.id } } }, select: { lesson: { select: { moduleId: true } } } }),
     db.moduleProgress.findMany({ where: { userId, module: { programId: program.id } } }),
     db.quizAttempt.findMany({ where: { userId, programId: program.id, isFinal: false }, select: { moduleId: true, score: true } }),
     db.quizAttempt.findMany({ where: { userId, programId: program.id, isFinal: true }, select: { score: true, passed: true } }),
@@ -103,7 +103,7 @@ async function recomputeModuleCompletion(userId: string, moduleId: string): Prom
   if (!mod) return false;
   const mp = await db.moduleProgress.findUnique({ where: { userId_moduleId: { userId, moduleId } } });
   if (!mp || mp.completedAt) return Boolean(mp?.completedAt);
-  const done = await db.lessonProgress.count({ where: { userId, lesson: { moduleId } } });
+  const done = await db.lessonProgress.count({ where: { userId, completedAt: { not: null }, lesson: { moduleId } } });
   const lessonsOk = done >= mod._count.lessons;
   const quizOk = mod._count.questions === 0 || Boolean(mp.quizPassedAt);
   if (!lessonsOk || !quizOk) return false;
@@ -140,12 +140,44 @@ export async function completeLesson(userId: string, role: Role, lessonId: strin
   if (err) return { ok: false, error: err };
   await openModule(userId, lesson.moduleId);
   const existing = await db.lessonProgress.findUnique({ where: { userId_lessonId: { userId, lessonId } } });
-  if (!existing) {
-    await db.lessonProgress.create({ data: { userId, lessonId } });
+  if (!existing?.completedAt) {
+    // a row may already exist holding only checkpoints: complete it in place
+    await db.lessonProgress.upsert({ where: { userId_lessonId: { userId, lessonId } }, create: { userId, lessonId, completedAt: new Date() }, update: { completedAt: new Date() } });
     await logActivity(userId, "LESSON_COMPLETED", { entityType: "Lesson", entityId: lessonId });
   }
   const moduleCompleted = await recomputeModuleCompletion(userId, lesson.moduleId);
   return { ok: true, moduleCompleted };
+}
+
+/** Checkpoint keys an author declared in a lesson's interactive blocks. */
+export function lessonCheckpointKeys(content: unknown): string[] {
+  const blocks = (content as { blocks?: { type?: string; checkpoints?: { key: string }[] }[] } | null)?.blocks ?? [];
+  return blocks.flatMap((b) => (b.type === "interactive" ? (b.checkpoints ?? []).map((c) => c.key) : []));
+}
+
+const asKeys = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+
+/** Tick one lesson checkpoint (idempotent). Creates the LessonProgress row without `completedAt` when needed. */
+export async function recordCheckpoint(userId: string, role: Role, lessonId: string, key: string): Promise<ActionResult<{ checkpoints: string[] }>> {
+  const lesson = await db.lesson.findUnique({ where: { id: lessonId } });
+  if (!lesson) return { ok: false, error: "Lesson not found." };
+  if (!lessonCheckpointKeys(lesson.content).includes(key)) return { ok: false, error: "Unknown checkpoint." };
+  const err = await assertModuleAccess(userId, role, lesson.moduleId);
+  if (err) return { ok: false, error: err };
+  await openModule(userId, lesson.moduleId);
+  const where = { userId_lessonId: { userId, lessonId } };
+  const row = await db.lessonProgress.findUnique({ where });
+  const have = asKeys(row?.checkpoints);
+  if (have.includes(key)) return { ok: true, checkpoints: have };
+  const next = [...have, key];
+  await db.lessonProgress.upsert({ where, create: { userId, lessonId, checkpoints: next }, update: { checkpoints: next } });
+  return { ok: true, checkpoints: next };
+}
+
+/** Checkpoints saved so far for a lesson. */
+export async function getCheckpoints(userId: string, lessonId: string): Promise<string[]> {
+  const row = await db.lessonProgress.findUnique({ where: { userId_lessonId: { userId, lessonId } }, select: { checkpoints: true } });
+  return asKeys(row?.checkpoints);
 }
 
 export interface QuizQuestionView {

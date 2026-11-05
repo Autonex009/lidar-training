@@ -23,9 +23,9 @@ export function Keycap({ children }: { children: ReactNode }) {
 
 export function Checklist({ checkpoints, done }: { checkpoints: Checkpoint[]; done: ReadonlySet<string> }) {
   return (
-    <ul className="mt-2 space-y-1 text-[13px]">
+    <ul className="space-y-1.5 text-[13px]">
       {checkpoints.map((c) => (
-        <li key={c.key} className="flex items-center gap-2"><Check on={done.has(c.key)} /><span className={done.has(c.key) ? "text-muted" : ""}>{c.label}</span></li>
+        <li key={c.key} data-testid={`checkpoint-${c.key}`} data-done={done.has(c.key) ? "true" : "false"} className="flex items-start gap-2"><span className="mt-0.5"><Check on={done.has(c.key)} /></span><span className={done.has(c.key) ? "text-muted" : ""}>{c.label}</span></li>
       ))}
     </ul>
   );
@@ -54,4 +54,10 @@ export function StepDialog({
       </div>
     </div>
   );
+}
+
+/** One-line result under a prompt: tone drives the colour. */
+export function Feedback({ tone, children, testId = "feedback" }: { tone: "good" | "bad" | "hint" | "info"; children: ReactNode; testId?: string }) {
+  const cls = tone === "good" ? "border-success bg-[#f1f9f1]" : tone === "bad" ? "border-[#e5484d] bg-[#fdf2f2]" : tone === "hint" ? "border-[#e8a317] bg-[#fff8e6]" : "border-line bg-panel";
+  return <div role="status" data-testid={testId} data-tone={tone} className={`border-l-4 px-3 py-1.5 text-[13px] ${cls}`}>{children}</div>;
 }
