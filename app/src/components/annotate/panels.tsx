@@ -64,7 +64,7 @@ export function ObjectsList(p: PanelProps) {
           })}
         </div>
       ))}
-      {dups.size > 0 && <p className="mt-1 rounded border border-red-200 bg-red-50 px-2 py-1 text-[12px] text-red-700">Duplicate track ID in this frame: {[...dups].join(", ")}</p>}
+      {dups.size > 0 && <p className="mt-1 rounded border border-danger/30 bg-danger/10 px-2 py-1 text-[12px] text-danger-ink">Duplicate track ID in this frame: {[...dups].join(", ")}</p>}
     </div>
   );
 }
@@ -98,7 +98,7 @@ export function TracksPanel(p: PanelProps) {
               const id = t.frames.get(f);
               return (
                 <button key={f} type="button" onClick={() => { p.goFrame(f); if (id) setTimeout(() => p.select(id), 120); }} title={id ? `Frame ${f + 1}` : `Frame ${f + 1}: no box`}
-                  className={`h-4 w-4 rounded-sm border text-[9px] leading-none ${id ? "border-[#8aa81d] bg-accent" : "border-line bg-panel text-muted"} ${f === p.frame ? "ring-1 ring-ink" : ""}`}>{f + 1}</button>
+                  className={`h-4 w-4 rounded-sm border text-[9px] leading-none ${id ? "border-accent bg-accent text-white" : "border-line bg-panel text-muted"} ${f === p.frame ? "ring-1 ring-ink" : ""}`}>{f + 1}</button>
               );
             })}
           </div>
@@ -177,7 +177,7 @@ export function PendingForm({ title, tags, onCancel, onAdd, hint }: { title: str
   const [reason, setReason] = useState("");
   const [tag, setTag] = useState(tags?.[0]?.key ?? "");
   return (
-    <div className="mt-1 space-y-1 rounded border border-[#8aa81d] bg-accent-tint p-2" data-testid="pending-form">
+    <div className="mt-1 space-y-1 rounded border border-accent bg-accent-tint p-2" data-testid="pending-form">
       <div className="text-[12px] font-medium">{title}</div>
       {hint && <div className="text-[11px] text-muted">{hint}</div>}
       {tags && (
@@ -187,7 +187,7 @@ export function PendingForm({ title, tags, onCancel, onAdd, hint }: { title: str
       )}
       <textarea className="min-h-[48px] w-full rounded border border-line bg-surface p-1 text-[12px]" placeholder="Reason / explanation (what evidence is missing or wrong)" aria-label="Reason" value={reason} onChange={(e) => setReason(e.target.value)} />
       <div className="flex gap-1">
-        <button type="button" className={`${btn} border-accent bg-accent`} disabled={!reason.trim()} onClick={() => onAdd(reason.trim(), tag)}>Add</button>
+        <button type="button" className={`${btn} border-accent bg-accent text-white`} disabled={!reason.trim()} onClick={() => onAdd(reason.trim(), tag)}>Add</button>
         <button type="button" className={btn} onClick={onCancel}>Cancel</button>
       </div>
     </div>

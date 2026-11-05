@@ -27,7 +27,7 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-md rounded-lg border border-line bg-surface p-5"
+        className="w-full max-w-md rounded-2xl border border-line bg-surface p-5 shadow-float"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-2 text-base font-semibold">{title}</h2>

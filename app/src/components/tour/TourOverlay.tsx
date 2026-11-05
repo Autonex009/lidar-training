@@ -93,14 +93,14 @@ function Intro() {
   const close = () => { dispatch({ type: "skip-request" }); dispatch({ type: "skip-confirm" }); };
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4" data-testid="tour-backdrop">
-      <div role="dialog" aria-modal="true" aria-label={def.intro.heading} data-testid="tour-intro" className="relative w-[min(560px,96vw)] overflow-hidden rounded-2xl border border-line bg-surface">
+      <div role="dialog" aria-modal="true" aria-label={def.intro.heading} data-testid="tour-intro" className="relative w-[min(560px,96vw)] overflow-hidden rounded-2xl border border-line bg-surface shadow-float">
         <div className="absolute right-3 top-3 z-10 rounded-md bg-surface/90"><CloseX onClick={close} label="Close tutorial" /></div>
         <IntroPreview kind={def.intro.previewKind ?? "none"} />
         <div className="px-8 pb-7 pt-6 text-center">
           <h2 className="text-[26px] font-semibold leading-tight tracking-tight">{def.intro.heading}</h2>
           <p className="mx-auto mt-2 max-w-[440px] text-[14px] leading-relaxed text-muted">{def.intro.body}</p>
           <button type="button" data-testid="tour-start" autoFocus onClick={() => dispatch({ type: "begin" })}
-            className="mt-5 h-11 w-full rounded-xl border border-accent bg-accent text-[15px] font-medium text-ink hover:brightness-95">
+            className="mt-5 h-11 w-full rounded-full border border-accent bg-accent text-[15px] font-medium text-white hover:bg-accent-hover">
             Start tutorial · {def.intro.estimatedMinutes} {def.intro.estimatedMinutes === 1 ? "min" : "mins"}
           </button>
         </div>
@@ -150,7 +150,7 @@ function StepCard() {
       {rect && <Spotlight rect={rect} pad={pad} />}
       <div
         role="dialog" aria-label={step.title} data-testid="tour-dialog" data-step={step.key} data-done={done ? "true" : "false"}
-        className={`fixed z-[80] w-[min(520px,94vw)] rounded-2xl border border-line p-5 text-ink ${near ? "" : "bottom-5 left-1/2 -translate-x-1/2"} ${done && !isInformational(step.complete) ? "bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))]" : "bg-surface"}`}
+        className={`fixed z-[80] w-[min(520px,94vw)] rounded-2xl border border-line shadow-float p-5 text-ink ${near ? "" : "bottom-5 left-1/2 -translate-x-1/2"} ${done && !isInformational(step.complete) ? "bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))]" : "bg-surface"}`}
         style={style}
       >
         {confirm ? (
@@ -181,7 +181,7 @@ function StepCard() {
                   return (
                     <button key={o.key} type="button" aria-pressed={on} data-testid={`tour-choice-${o.key}`}
                       onClick={() => { step.choice?.onChoose?.(o.key); emitTourEvent("tour:choice", o.key); setTick((t) => t + 1); }}
-                      className={`flex h-9 items-center justify-center gap-2 rounded-lg border text-[13px] font-medium ${on ? "border-[#8aa81d] bg-[#8aa81d] text-white" : "border-line bg-panel hover:bg-line/50"}`}>
+                      className={`flex h-9 items-center justify-center gap-2 rounded-lg border text-[13px] font-medium ${on ? "border-accent bg-accent text-white" : "border-line bg-panel hover:bg-line/50"}`}>
                       {o.icon === "mouse" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden><rect x="6" y="3" width="12" height="18" rx="6" /><path d="M12 3v6" /></svg>}
                       {o.icon === "trackpad" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 15h18" /></svg>}
                       {o.label}
@@ -197,11 +197,11 @@ function StepCard() {
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-panel px-3.5 text-[13px] font-medium enabled:hover:bg-line/50 disabled:opacity-50">← Back</button>
               </div>
               <div className="flex gap-1.5" aria-label={`Step ${state.index + 1} of ${state.steps.length}`} role="img">
-                {state.steps.map((s, i) => <span key={s.key} className={`h-1.5 rounded-full ${i === state.index ? "w-5 bg-ink" : state.done[i] && !isInformational(s.complete) ? "w-1.5 bg-[#8aa81d]" : "w-1.5 bg-line"}`} />)}
+                {state.steps.map((s, i) => <span key={s.key} className={`h-1.5 rounded-full ${i === state.index ? "w-5 bg-ink" : state.done[i] && !isInformational(s.complete) ? "w-1.5 bg-accent" : "w-1.5 bg-line"}`} />)}
               </div>
               <div className="flex justify-end">
                 <button type="button" data-testid="tour-next" disabled={!enabled} onClick={() => dispatch({ type: "next" })}
-                  className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium disabled:opacity-50 ${enabled ? "border-accent bg-accent hover:brightness-95" : "border-line bg-panel"}`}>
+                  className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium disabled:opacity-50 ${enabled ? "border-accent bg-accent text-white hover:bg-accent-hover" : "border-line bg-panel"}`}>
                   {last ? "Finish" : "Next"} {enabled ? <span aria-hidden>↵</span> : <span aria-hidden>→</span>}
                 </button>
               </div>
@@ -237,8 +237,8 @@ export function TourOverlay() {
   if (!def || state.phase === "closed") return null;
   if (state.phase === "resume-pill") {
     return (
-      <div className="fixed bottom-4 right-4 z-[80] flex items-center overflow-hidden rounded-full border border-line bg-surface text-[13px]" data-testid="tour-resume-pill">
-        <button type="button" data-testid="tour-resume" onClick={() => dispatch({ type: "resume" })} className="h-9 bg-accent px-4 font-medium hover:brightness-95">Resume tutorial</button>
+      <div className="fixed bottom-4 right-4 z-[80] flex items-center overflow-hidden rounded-full border border-line bg-surface shadow-float text-[13px]" data-testid="tour-resume-pill">
+        <button type="button" data-testid="tour-resume" onClick={() => dispatch({ type: "resume" })} className="h-9 rounded-full bg-accent px-4 font-medium text-white hover:bg-accent-hover">Resume tutorial</button>
         <span className="hidden px-3 text-muted sm:inline">{def.title}</span>
         <button type="button" aria-label="Dismiss tutorial" data-testid="tour-resume-dismiss" onClick={() => dispatch({ type: "skip-confirm" })} className="h-9 px-3 text-muted hover:bg-panel">×</button>
       </div>

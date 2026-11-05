@@ -420,7 +420,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
         <Button className="ml-2" data-tour="ws-instructions" onClick={() => setDrawer((d) => !d)}>Instructions</Button>
         <Button onClick={() => document.getElementById("flags-section")?.scrollIntoView({ block: "nearest" })}>Issues / Flags ({flagsHere.length})</Button>
         <div className="ml-auto flex items-center gap-2">
-          <span className={`text-[12px] ${autosave.status === "error" ? "text-red-700" : "text-muted"}`} data-testid="save-status">{saveText}</span>
+          <span className={`text-[12px] ${autosave.status === "error" ? "text-danger-ink" : "text-muted"}`} data-testid="save-status">{saveText}</span>
           <Button data-tour="ws-save" disabled={readOnly} onClick={() => void autosave.save()}>Save draft</Button>
           <Button variant="primary" data-tour="ws-submit" disabled={readOnly} onClick={() => void openSubmit()} data-testid="submit-button">Submit</Button>
           <Button disabled={!data.nav.prevId} onClick={() => void navTo(data.nav.prevId)}>Previous</Button>
@@ -428,15 +428,15 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
           <HelpMenu compact />
         </div>
       </header>
-      {bannerText && <div className="border-b border-line bg-amber-50 px-3 py-1.5 text-[12px] text-amber-800" data-testid="status-banner">{bannerText}</div>}
+      {bannerText && <div className="border-b border-line bg-warning/10 px-3 py-1.5 text-[12px] text-warning-ink" data-testid="status-banner">{bannerText}</div>}
       {data.isOwner && status === "REVISION_REQUIRED" && fb?.decision === "REQUEST_REVISION" && (
-        <div className="border-b border-line bg-red-50 px-3 py-1.5 text-[12px] text-red-800" data-testid="revision-banner">
+        <div className="border-b border-line bg-danger/10 px-3 py-1.5 text-[12px] text-danger-ink" data-testid="revision-banner">
           <b>Revision required.</b> {fb.feedback}
           {fb.errorTags.length > 0 && <> Tags: {fb.errorTags.map((t) => data.tagNames[t] ?? t).join(", ")}.</>}
           {fb.correctionInstructions && <> Correction: {fb.correctionInstructions}</>}
         </div>
       )}
-      {toolsOff && <div className="border-b border-line bg-amber-50 px-3 py-1.5 text-[12px] text-amber-800">Annotation tools support Z-up assets only; this asset is Y-up.</div>}
+      {toolsOff && <div className="border-b border-line bg-warning/10 px-3 py-1.5 text-[12px] text-warning-ink">Annotation tools support Z-up assets only; this asset is Y-up.</div>}
       <div className="relative flex min-h-0 flex-1">
         <aside className="flex w-[300px] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface" aria-label="Labels panel">
           <Section title="Labels" right={<span className="text-[11px] text-muted">{allCuboids(doc).length ? `${cubs.length} in frame` : ""}</span>}>
@@ -452,7 +452,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                   <button type="button" disabled={readOnly} onClick={() => setActiveLabel("")} className={`rounded border px-1.5 py-0.5 text-[12px] ${activeLabel === "" ? "border-ink bg-accent-tint" : "border-line"}`}>Erase</button>
                 </div>
                 <label className="flex items-center gap-2 text-[12px]" data-tour="ws-brush"><span className="w-16 text-muted">Brush {brush.toFixed(1)} m</span>
-                  <input type="range" min={0.1} max={3} step={0.1} value={brush} onChange={(e) => setBrush(Number(e.target.value))} className="flex-1 accent-[#8aa81d]" aria-label="Brush radius" /></label>
+                  <input type="range" min={0.1} max={3} step={0.1} value={brush} onChange={(e) => setBrush(Number(e.target.value))} className="flex-1 accent-[var(--accent)]" aria-label="Brush radius" /></label>
                 {instanceDisplay && (
                   <div className="flex items-center gap-2 text-[12px]"><span>Instance {instance}</span>
                     <button type="button" className="h-6 rounded border border-line px-2 hover:bg-panel" disabled={readOnly} onClick={() => setInstance((n) => n + 1)}>New instance</button>
@@ -526,7 +526,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
         </main>
       </div>
       {autosave.status === "error" && (
-        <div role="alert" className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-800">
+        <div role="alert" className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] text-danger-ink">
           Could not save: {autosave.error}<Button onClick={autosave.retry}>Retry</Button>
         </div>
       )}

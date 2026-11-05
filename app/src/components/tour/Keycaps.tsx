@@ -36,7 +36,7 @@ const GLYPH_LABEL: Record<GlyphId, string> = {
 export function KeycapRow({ keys, active }: { keys: KeycapSpec[]; active?: boolean }) {
   // Keep the classic W / A S D layout when exactly those four keys are given.
   const wasd = keys.length === 4 && ["W", "A", "S", "D"].every((k) => keys.includes(k));
-  const tone = active ? "border-[#8aa81d] bg-accent-tint" : "";
+  const tone = active ? "border-accent bg-accent-tint" : "";
   if (wasd) {
     return (
       <div className="inline-grid grid-cols-[repeat(3,2.25rem)] gap-1.5" data-testid="tour-keycaps">

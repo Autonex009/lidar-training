@@ -84,8 +84,8 @@ describe("trainee task view whitelist", () => {
 
 describe("middleware public paths", () => {
   it("is exact", () => {
-    for (const p of ["/login", "/register", "/setup", "/api/auth/session", "/api/auth/callback/credentials", "/api/setup"]) expect(isPublicPath(p)).toBe(true);
-    for (const p of ["/", "/learn", "/api/assets/x", "/api/admin/op/x", "/loginx", "/setup-evil", "/api/authx", "/api/setupx", "/api/notifications", "/admin"]) expect(isPublicPath(p)).toBe(false);
+    for (const p of ["/", "/login", "/register", "/setup", "/api/auth/session", "/api/auth/callback/credentials", "/api/setup"]) expect(isPublicPath(p)).toBe(true);
+    for (const p of ["/learn", "/api/assets/x", "/api/admin/op/x", "/loginx", "/setup-evil", "/api/authx", "/api/setupx", "/api/notifications", "/admin"]) expect(isPublicPath(p)).toBe(false);
   });
 });
 

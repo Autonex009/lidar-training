@@ -24,13 +24,13 @@ export function ProfileMenu({ name, email, role }: { name: string; email: string
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-semibold">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white text-[11px] font-semibold">
           {name.charAt(0).toUpperCase()}
         </span>
         {name}
       </button>
       {open ? (
-        <div role="menu" className="absolute right-0 top-9 z-40 w-56 rounded-md border border-line bg-surface p-1 text-[13px]">
+        <div role="menu" className="absolute right-0 top-9 z-40 w-56 rounded-xl border border-line bg-surface p-1 text-[13px] shadow-float">
           <div className="border-b border-line px-2 py-1.5">
             <p className="truncate font-medium">{name}</p>
             <p className="truncate text-xs text-muted">{email} · {role}</p>

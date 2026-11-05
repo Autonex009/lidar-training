@@ -64,7 +64,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <label className="flex flex-col gap-0.5">From<input type="date" name="from" defaultValue={sp.from ?? ""} className={ctl} /></label>
         <label className="flex flex-col gap-0.5">To<input type="date" name="to" defaultValue={sp.to ?? ""} className={ctl} /></label>
         <label className="flex h-7 items-center gap-1"><input type="checkbox" name="mine" value="1" defaultChecked={Boolean(sp.mine)} />Assigned to me</label>
-        <button type="submit" className="h-7 rounded-md border border-accent bg-accent px-3 font-medium">Apply</button>
+        <button type="submit" className="h-7 rounded-full border border-accent bg-accent text-white px-3 font-medium">Apply</button>
         <Link href="/review" className="flex h-7 items-center text-muted underline">Reset</Link>
       </form>
       {q.rows.length === 0 ? (
@@ -88,7 +88,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
                 <td className={`${td} max-w-[220px] text-[12px] text-muted`}>{r.priorFeedback ?? "-"}</td>
                 <td className={`${td} whitespace-nowrap text-right`}>
                   {r.reviewerId !== user.id && r.status === "PENDING_REVIEW" && <AssignMeButton submissionId={r.submissionId} />}{" "}
-                  <Link href={`/review/${r.submissionId}`} className="inline-flex h-6 items-center rounded-md border border-accent bg-accent px-2 text-[11px] font-medium hover:brightness-95">{r.status === "PENDING_REVIEW" ? "Review" : "View"}</Link>
+                  <Link href={`/review/${r.submissionId}`} className="inline-flex h-6 items-center rounded-full border border-accent bg-accent text-white px-2 text-[11px] font-medium hover:bg-accent-hover">{r.status === "PENDING_REVIEW" ? "Review" : "View"}</Link>
                 </td>
               </tr>
             ))}

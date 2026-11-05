@@ -22,7 +22,7 @@ export function InstructionsDrawer({ open, onClose, task, feedback, tagNames, on
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3 text-[13px]">
         {feedback && feedback.decision === "REQUEST_REVISION" && (
-          <div className={`${sec} rounded border border-red-200 bg-red-50 p-2`}>
+          <div className={`${sec} rounded border border-danger/30 bg-danger/10 p-2`}>
             <div className={h}>Previous feedback</div>
             <p>{feedback.feedback || "Revision requested."}</p>
             {feedback.errorTags.length > 0 && <p className="mt-1 text-[12px]">Tags: {feedback.errorTags.map((t) => tagNames[t] ?? t).join(", ")}</p>}
@@ -84,14 +84,14 @@ export function SubmitDialog({ open, onClose, errors, warnings, busy, serverErro
       <div className="max-h-[60vh] space-y-2 overflow-y-auto text-[13px]" data-testid="submit-dialog">
         {errors.length === 0 && warnings.length === 0 && <p>Everything looks complete. Your work will be locked while a reviewer checks it.</p>}
         {errors.length > 0 && (
-          <div><p className="font-medium text-red-700">Fix these before submitting ({errors.length})</p>
+          <div><p className="font-medium text-danger-ink">Fix these before submitting ({errors.length})</p>
             <ul className="list-disc pl-4">{errors.slice(0, 30).map((e, i) => <li key={i}>{e.message}</li>)}{errors.length > 30 && <li>and {errors.length - 30} more</li>}</ul></div>
         )}
         {warnings.length > 0 && (
-          <div><p className="font-medium text-amber-700">Warnings ({warnings.length}), you can still submit</p>
+          <div><p className="font-medium text-warning-ink">Warnings ({warnings.length}), you can still submit</p>
             <ul className="list-disc pl-4">{warnings.slice(0, 20).map((e, i) => <li key={i}>{e.message}</li>)}</ul></div>
         )}
-        {serverError && <p className="text-red-700">{serverError}</p>}
+        {serverError && <p className="text-danger-ink">{serverError}</p>}
         {errors.length === 0 && <p className="text-muted">Submitting locks the task until the reviewer responds. A submitted version cannot be edited.</p>}
       </div>
       <div className="mt-3 flex justify-end gap-2">

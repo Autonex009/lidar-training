@@ -26,7 +26,7 @@ export function AssignPanel({ taskId, trainees, reviewers, isPublished }: { task
   const summary = (d: unknown) => { const x = d as { created: number; alreadyAssigned: number }; return `${x.created} created, ${x.alreadyAssigned} already assigned.`; };
   return (
     <div className="flex flex-col gap-4">
-      {!isPublished ? <p className="text-[13px] text-amber-700">Publish the task before assigning it.</p> : null}
+      {!isPublished ? <p className="text-[13px] text-warning-ink">Publish the task before assigning it.</p> : null}
       <div>
         <div className="mb-1 text-[13px] text-muted">Select trainees (already assigned are marked)</div>
         <div className="flex max-h-56 flex-col gap-0.5 overflow-y-auto rounded-md border border-line p-2 text-[13px]">
@@ -61,7 +61,7 @@ export function ReferencePanel({ taskId, summary, initialJson }: { taskId: strin
   const [localErr, setLocalErr] = useState<string | null>(null);
   return (
     <div className="flex flex-col gap-2">
-      <p className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[13px] text-amber-800">Hidden from trainees. Used only for advisory metrics and the reviewer overlay.</p>
+      <p className="rounded-md border border-warning/40 bg-warning/10 px-2 py-1 text-[13px] text-warning-ink">Hidden from trainees. Used only for advisory metrics and the reviewer overlay.</p>
       <p className="text-[13px]">
         {summary ? <>Objects: <strong>{summary.total}</strong> ({Object.entries(summary.byClass).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}); frames: {summary.frames}; point labels: {summary.hasPointLabels ? "yes" : "no"}</> : "No reference annotation."}
       </p>

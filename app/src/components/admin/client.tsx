@@ -37,8 +37,8 @@ export function useOp() {
 }
 
 export function Status({ error, message }: { error: string | null; message: string | null }) {
-  if (error) return <p role="alert" className="text-[13px] text-red-700">{error}</p>;
-  if (message) return <p className="text-[13px] text-green-700">{message}</p>;
+  if (error) return <p role="alert" className="text-[13px] text-danger-ink">{error}</p>;
+  if (message) return <p className="text-[13px] text-success-ink">{message}</p>;
   return null;
 }
 

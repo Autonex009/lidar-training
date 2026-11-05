@@ -37,7 +37,7 @@ export default async function ReviewHistoryPage({ searchParams }: { searchParams
         )}
         <label className="flex flex-col gap-0.5">From<input type="date" name="from" defaultValue={sp.from ?? ""} className={ctl} /></label>
         <label className="flex flex-col gap-0.5">To<input type="date" name="to" defaultValue={sp.to ?? ""} className={ctl} /></label>
-        <button type="submit" className="h-7 rounded-md border border-accent bg-accent px-3 font-medium">Apply</button>
+        <button type="submit" className="h-7 rounded-full border border-accent bg-accent text-white px-3 font-medium">Apply</button>
         <Link href="/review/history" className="flex h-7 items-center text-muted underline">Reset</Link>
       </form>
       {rows.length === 0 ? <EmptyState title="No decisions yet" description="Decisions appear here after you approve or request a revision." /> : (

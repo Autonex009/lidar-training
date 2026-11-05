@@ -39,7 +39,7 @@ export function TraineeSubmissions({ rows }: { rows: MySubmissionRow[] }) {
                     {r.tags.length > 0 && <p className="mb-1"><span className="font-medium">Error tags: </span>{r.tags.join(", ")}</p>}
                     {r.correctionInstructions && <p className="mb-1 whitespace-pre-wrap"><span className="font-medium">Correction instructions: </span>{r.correctionInstructions}</p>}
                     <p className="mb-1"><span className="font-medium">Version history: </span>{r.history.map((h) => `#${h.attempt} ${h.status.replace("_", " ").toLowerCase()}${h.score !== null ? ` (${h.score})` : ""}`).join(" / ")}</p>
-                    {r.canReopen && <Link href={`/annotate/${r.assignmentId}`} className="inline-flex h-7 items-center rounded-md border border-accent bg-accent px-3 font-medium text-ink hover:brightness-95">Reopen task to revise</Link>}
+                    {r.canReopen && <Link href={`/annotate/${r.assignmentId}`} className="inline-flex h-7 items-center rounded-full border border-accent bg-accent text-white px-3 font-medium hover:bg-accent-hover">Reopen task to revise</Link>}
                   </td>
                 </tr>
               )}

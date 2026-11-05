@@ -14,8 +14,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { msg } = await searchParams;
   const notice = msg ? MESSAGES[msg] : undefined;
   return (
-    <AuthShell title="Sign in">
-      {notice && <p className="mb-4 rounded border border-border bg-panel px-3 py-2 text-[13px] text-ink">{notice}</p>}
+    <AuthShell title="Welcome back" subtitle="Sign in to continue your training.">
+      {notice && <p role="status" className="mb-4 rounded-[10px] border border-accent/25 bg-accent-tint px-3 py-2.5 text-[14px] text-accent">{notice}</p>}
       <AuthForm
         action={loginAction}
         submitLabel="Sign in"
@@ -24,8 +24,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           { name: "password", label: "Password", type: "password", autoComplete: "current-password" },
         ]}
       />
-      <p className="mt-4 text-[13px] text-muted">
-        No account? <Link className="text-ink underline" href="/register">Register</Link>
+      <p className="mt-5 text-center text-[14px] text-muted">
+        No account? <Link className="font-semibold text-accent hover:underline" href="/register">Register</Link>
       </p>
     </AuthShell>
   );

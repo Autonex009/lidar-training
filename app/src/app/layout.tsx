@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LiDAR Training Portal",
+  title: "LiDAR Academy",
   description: "3D LiDAR annotation training, assessment and certification",
 };
 

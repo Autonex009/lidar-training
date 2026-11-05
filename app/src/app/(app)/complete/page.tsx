@@ -42,7 +42,7 @@ export default async function CompletePage() {
             <h2 className="mb-1 text-[13px] font-semibold">Certificate</h2>
             {s.certificate ? (
               <p className="text-[13px]">Issued {new Date(s.certificate.issuedAt).toLocaleDateString()}.{" "}
-                <Link href="/complete/certificate" className="inline-flex h-7 items-center rounded-md border border-accent bg-accent px-3 font-medium text-ink hover:brightness-95" data-testid="view-certificate">View certificate</Link></p>
+                <Link href="/complete/certificate" className="inline-flex h-7 items-center rounded-full border border-accent bg-accent text-white px-3 font-medium hover:bg-accent-hover" data-testid="view-certificate">View certificate</Link></p>
             ) : s.required.remaining.length === 0 && s.required.total === 0 ? (
               <p className="text-[13px] text-muted">This program has no required tasks configured, so no certificate is issued.</p>
             ) : (

@@ -73,7 +73,7 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
         <div className="ml-auto flex items-center gap-3">
           <span className="text-[12px] text-muted">Reviewer: {detail.reviewer?.name ?? "unassigned"}</span>
           {detail.reviewer?.id !== currentUserId && <Button onClick={() => void assignToMe()} data-testid="assign-me">Assign to me</Button>}
-          {assignErr && <span className="text-[12px] text-red-700">{assignErr}</span>}
+          {assignErr && <span className="text-[12px] text-danger-ink">{assignErr}</span>}
           <label className="flex cursor-pointer items-center gap-1.5 text-[12px]" data-tour="rv-toggle-ref">
             <input type="checkbox" checked={showRef} onChange={(e) => { emitTourEvent("toggle-reference", e.target.checked); setShowRef(e.target.checked); }} data-testid="toggle-reference" />
             Show reference <span className="text-muted">{isSeg ? "(point labels)" : "(dashed white boxes)"}</span>

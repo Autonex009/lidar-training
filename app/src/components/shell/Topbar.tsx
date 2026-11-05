@@ -20,7 +20,7 @@ export function Topbar({
       <div className="flex items-center gap-2 text-[13px] text-muted" title="Learning progress" data-tour="topbar-progress">
         <span>Learning</span>
         <div className="h-1.5 w-28 overflow-hidden rounded bg-panel border border-line">
-          <div className="h-full bg-accent" style={{ width: `${progress}%` }} />
+          <div className="h-full grad-bar" style={{ width: `${progress}%` }} />
         </div>
         <span className="w-8 text-ink">{progress}%</span>
       </div>

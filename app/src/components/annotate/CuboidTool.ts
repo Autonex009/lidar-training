@@ -35,7 +35,7 @@ type Gesture =
   | { kind: "lasso"; pts: [number, number][] }
   | { kind: "click"; x: number; y: number; mode: "flag" | "mark" };
 
-const ACCENT = 0xc6f135;
+const ACCENT = 0x4a9bf5;
 const norm = (a: number) => { let y = a % (2 * Math.PI); if (y > Math.PI) y -= 2 * Math.PI; else if (y < -Math.PI) y += 2 * Math.PI; return y; };
 
 /**
@@ -479,7 +479,7 @@ export class CuboidTool {
     ctx.closePath();
     ctx.fillStyle = "rgba(198,241,53,0.15)";
     ctx.fill();
-    ctx.strokeStyle = "#c6f135";
+    ctx.strokeStyle = "#4a9bf5";
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }

@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function SetupPage() {
   if ((await db.user.count({ where: { role: "ADMIN" } })) > 0) notFound();
   return (
-    <AuthShell title="First-time setup">
-      <p className="mb-3 text-[13px] text-muted">Create the first administrator. Requires the SETUP_TOKEN from the server environment.</p>
+    <AuthShell title="Initial administrator setup" subtitle="Create the first administrator. Requires the SETUP_TOKEN from the server environment.">
       <AuthForm
         action={setupAction}
         submitLabel="Create admin"

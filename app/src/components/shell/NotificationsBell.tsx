@@ -86,7 +86,7 @@ export function NotificationsBell({ initialUnread }: { initialUnread: number }) 
         ) : null}
       </button>
       {open && (
-        <div role="menu" data-testid="notifications-panel" className="absolute right-0 top-10 z-40 w-[360px] rounded-md border border-line bg-surface text-[13px]">
+        <div role="menu" data-testid="notifications-panel" className="absolute right-0 top-10 z-40 w-[360px] rounded-xl border border-line bg-surface shadow-float text-[13px]">
           <div className="flex items-center justify-between border-b border-line px-3 py-2">
             <span className="font-medium">Notifications</span>
             <button type="button" onClick={() => void markAll()} disabled={unread === 0} className="text-[12px] text-muted hover:text-ink disabled:opacity-40">Mark all read</button>

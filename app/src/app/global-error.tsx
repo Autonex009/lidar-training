@@ -8,7 +8,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <h1 style={{ fontSize: 15, margin: "0 0 4px" }}>Something went wrong</h1>
           <p style={{ color: "#6b7280" }}>An unexpected error occurred.</p>
           {error.digest ? <p style={{ color: "#6b7280", fontSize: 12 }}>Error reference: <code>{error.digest}</code></p> : null}
-          <button type="button" onClick={reset} style={{ height: 32, padding: "0 12px", background: "#c6f135", border: "1px solid #e5e5e5", borderRadius: 6, fontWeight: 500 }}>Try again</button>
+          <button type="button" onClick={reset} style={{ height: 32, padding: "0 12px", background: "#1F3BB3", color: "#fff", border: "none", borderRadius: 999, fontWeight: 500 }}>Try again</button>
         </div>
       </body>
     </html>

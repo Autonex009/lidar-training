@@ -83,7 +83,7 @@ export function ViewerToolbar(p: ViewerToolbarProps) {
       <Sep />
       <label className="flex items-center gap-1.5 text-muted" title="Point size">
         <span>Size</span>
-        <input type="range" min={0.01} max={0.3} step={0.005} value={p.pointSize} onChange={(e) => p.onPointSize(Number(e.target.value))} className="h-1 w-24 accent-[#8aa81d]" aria-label="Point size" />
+        <input type="range" min={0.01} max={0.3} step={0.005} value={p.pointSize} onChange={(e) => p.onPointSize(Number(e.target.value))} className="h-1 w-24 accent-[var(--accent)]" aria-label="Point size" />
       </label>
       <select value={p.colorMode} onChange={(e) => p.onColorMode(e.target.value as ColorMode)} aria-label="Colour mode" title="Colour mode" className="ml-2 h-6 rounded border border-line bg-surface px-1 text-[12px] text-ink">
         {p.availableModes.map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}

@@ -43,7 +43,7 @@ function Rows({ rows }: { rows: TaskRow[] }) {
           </td>
           <td className="border-b border-line px-2 py-2 text-right">
             {r.locked ? <span className="text-[12px]" title={r.lockReason}>Locked</span> : (
-              <Link href={`/annotate/${r.assignmentId}`} className="inline-flex h-7 items-center rounded-md border border-accent bg-accent px-3 text-[12px] font-medium text-ink hover:brightness-95">
+              <Link href={`/annotate/${r.assignmentId}`} className="inline-flex h-7 items-center rounded-full border border-accent bg-accent text-white px-3 text-[12px] font-medium hover:bg-accent-hover">
                 {r.status === "NOT_STARTED" ? "Start" : r.status === "PENDING_REVIEW" || r.status === "APPROVED" ? "View" : "Open"}
               </Link>
             )}

@@ -7,7 +7,7 @@ import type {
   CameraState, ColorMode, ControlKind, CuboidOverlay, EngineHandlers, EngineOptions, FrameSource, NavigationProfile, PointPick, Preset,
 } from "./types";
 
-const ACCENT = 0xc6f135;
+const ACCENT = 0x4a9bf5;
 const PALETTE = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4", "#469990"];
 const DEFAULT_LABEL_COLORS: Record<number, string> = {
   1: "#6b7280", 2: "#4363d8", 3: "#e6194b", 4: "#f58231", 5: "#ffe119", 6: "#a9a9a9", 7: "#3cb44b", 8: "#911eb4",

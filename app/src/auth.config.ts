@@ -1,8 +1,10 @@
 import type { NextAuthConfig } from "next-auth";
 
+const PUBLIC_EXACT = ["/"];
 const PUBLIC_PREFIXES = ["/login", "/register", "/setup", "/api/auth", "/api/setup"];
 
 export function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_EXACT.includes(pathname)) return true;
   return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 

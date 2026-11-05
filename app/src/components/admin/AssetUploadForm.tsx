@@ -45,9 +45,9 @@ export function AssetUploadForm({ binPresets }: { binPresets: string[] }) {
       <Labeled label="Description (optional)"><input name="description" className={inputCls} /></Labeled>
       <div className="flex items-end gap-3 md:col-span-2">
         <Button type="submit" variant="primary" disabled={busy}>{busy ? "Uploading..." : "Upload"}</Button>
-        {done ? <span className="text-[13px] text-green-700">{done}</span> : null}
+        {done ? <span className="text-[13px] text-success-ink">{done}</span> : null}
       </div>
-      {error ? <pre role="alert" className="whitespace-pre-wrap rounded-md border border-red-200 bg-red-50 p-2 text-[12px] text-red-700 md:col-span-3">Parser error: {error}</pre> : null}
+      {error ? <pre role="alert" className="whitespace-pre-wrap rounded-md border border-danger/30 bg-danger/10 p-2 text-[12px] text-danger-ink md:col-span-3">Parser error: {error}</pre> : null}
     </form>
   );
 }

@@ -128,7 +128,7 @@ export function DecisionForm({ detail }: { detail: ReviewDetail }) {
         <span className="mb-0.5 block font-medium">Feedback {mode === "REQUEST_REVISION" ? "(required)" : "(optional)"}</span>
         <textarea className={`${field} min-h-[72px]`} value={feedback} onChange={(e) => setFeedback(e.target.value)} data-testid="feedback-input" />
       </label>
-      {error && <p role="alert" className="text-red-700" data-testid="decision-error">{error}</p>}
+      {error && <p role="alert" className="text-danger-ink" data-testid="decision-error">{error}</p>}
       <Button variant="primary" onClick={() => void submit()} disabled={busy} data-testid="submit-decision">{busy ? "Saving..." : mode === "APPROVE" ? "Approve" : "Send back for revision"}</Button>
     </div>
   );

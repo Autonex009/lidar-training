@@ -29,7 +29,7 @@ export function HelpMenu({ compact = false }: { compact?: boolean }) {
         className={`flex items-center justify-center rounded-md border border-line text-[13px] font-medium hover:bg-panel ${compact ? "h-7 w-7" : "h-8 w-8"}`}
       >?</button>
       {open ? (
-        <div role="menu" aria-label="Tutorials" data-testid="help-menu" className="absolute right-0 top-full z-[90] mt-1 w-80 rounded-md border border-line bg-surface p-1 text-[13px]">
+        <div role="menu" aria-label="Tutorials" data-testid="help-menu" className="absolute right-0 top-full z-[90] mt-1 w-80 rounded-xl border border-line bg-surface p-1 text-[13px] shadow-float">
           <p className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">Tutorials</p>
           {list.length === 0 && <p className="px-2 py-2 text-muted">No tutorials for this page.</p>}
           {list.map((d) => {

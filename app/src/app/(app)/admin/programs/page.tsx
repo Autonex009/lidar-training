@@ -32,7 +32,7 @@ export default async function ProgramsPage() {
       </Table>
       <div className="mt-6" />
       <Section title="New program">
-        {configError ? <p className="mb-2 text-[13px] text-red-700">Could not read project configs: {configError}</p> : null}
+        {configError ? <p className="mb-2 text-[13px] text-danger-ink">Could not read project configs: {configError}</p> : null}
         <NewProgramForm availableConfigs={configs.filter((c) => !imported.has(c.slug))} />
       </Section>
     </>

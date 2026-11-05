@@ -44,7 +44,7 @@ export function FrameTimeline({ frameIndex, frameCount, onFrame, marks }: FrameT
       </button>
       <span className="w-4 text-right tabular-nums">0</span>
       <div className="relative flex-1">
-        <input type="range" min={0} max={Math.max(0, frameCount - 1)} step={1} value={frameIndex} onChange={(e) => onFrame(Number(e.target.value))} aria-label="Frame" className="w-full accent-[#8aa81d]" />
+        <input type="range" min={0} max={Math.max(0, frameCount - 1)} step={1} value={frameIndex} onChange={(e) => onFrame(Number(e.target.value))} aria-label="Frame" className="w-full accent-[var(--accent)]" />
         {marks && frameCount > 1 && (
           <div className="pointer-events-none absolute inset-x-0 -bottom-1 h-1">
             {marks.map((m) => <span key={m} className="absolute h-1 w-px bg-muted" style={{ left: `${(m / (frameCount - 1)) * 100}%` }} />)}

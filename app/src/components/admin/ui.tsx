@@ -46,6 +46,6 @@ export function Tabs({ items, current }: { items: { href: string; label: string;
 export const fmtDate = (d: Date | string | null | undefined) => (d ? new Date(d).toISOString().slice(0, 16).replace("T", " ") : "-");
 
 export function Badge({ children, tone = "plain" }: { children: ReactNode; tone?: "plain" | "warn" | "ok" }) {
-  const c = tone === "warn" ? "border-amber-300 bg-amber-50 text-amber-800" : tone === "ok" ? "border-green-200 bg-green-50 text-green-700" : "border-line bg-panel text-muted";
+  const c = tone === "warn" ? "border-warning/40 bg-warning/10 text-warning-ink" : tone === "ok" ? "border-success/30 bg-success/10 text-success-ink" : "border-line bg-panel text-muted";
   return <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium ${c}`}>{children}</span>;
 }

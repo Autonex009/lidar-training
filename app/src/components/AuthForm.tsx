@@ -23,12 +23,14 @@ export function AuthForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-4">
       {fields.map((f) => (
-        <Field key={f.name} name={f.name} label={f.label} type={f.type ?? "text"} autoComplete={f.autoComplete} required />
+        <Field key={f.name} large name={f.name} label={f.label} type={f.type ?? "text"} autoComplete={f.autoComplete} required />
       ))}
-      {state.error ? <p role="alert" className="text-[13px] text-red-600">{state.error}</p> : null}
-      <Button type="submit" variant="primary" disabled={pending} className="h-9">
+      {state.error ? (
+        <p role="alert" className="rounded-[10px] border border-danger/30 bg-danger/10 px-3 py-2.5 text-[14px] text-danger-ink">{state.error}</p>
+      ) : null}
+      <Button type="submit" variant="primary" disabled={pending} className="mt-1 h-12 w-full text-[16px]">
         {pending ? "Please wait..." : submitLabel}
       </Button>
     </form>

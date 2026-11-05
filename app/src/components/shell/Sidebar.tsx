@@ -44,10 +44,10 @@ export function Sidebar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[250px] flex-col border-r border-line bg-surface">
-      <div className="flex h-12 items-center border-b border-line px-4 text-sm font-semibold">LiDAR Training</div>
+      <div className="flex h-12 items-center border-b border-line px-4 text-sm font-semibold">LiDAR Academy</div>
       <nav className="flex flex-col gap-0.5 p-2" aria-label="Primary" data-tour="sidebar">
         {items.map((item) => {
-          const base = "flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px]";
+          const base = "relative flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px]";
           if (item.locked) {
             return (
               <Tooltip key={item.href} text={item.lockReason ?? "Locked"}>
@@ -65,7 +65,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
               key={item.href}
               href={item.href}
               data-tour={`sidebar-${item.icon}`}
-              className={`${base} ${active ? "bg-accent-tint font-medium text-ink" : "text-ink hover:bg-panel"}`}
+              className={`${base} ${active ? "bg-accent-tint font-medium text-accent before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-accent" : "text-ink hover:bg-panel"}`}
               aria-current={active ? "page" : undefined}
             >
               <Icon name={item.icon} />
