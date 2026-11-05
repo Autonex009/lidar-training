@@ -19,6 +19,5 @@ ENV NODE_ENV=production \
     ASSETS_DIR="/data/assets" \
     AUTH_TRUST_HOST=true \
     PORT=3000
-VOLUME ["/data"]
 EXPOSE 3000
 CMD ["sh", "./start.sh"]
