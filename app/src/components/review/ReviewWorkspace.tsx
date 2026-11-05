@@ -10,12 +10,15 @@ import { matchBoxes } from "@/lib/annotation/metrics";
 import { cuboidsOf } from "@/lib/annotation/types";
 import { describeMetrics } from "@/lib/review/scoring";
 import type { ReviewDetail } from "@/lib/review/service";
+import { emitTourEvent } from "@/lib/tour/events";
+import { HelpMenu } from "@/components/tour/HelpMenu";
+import { usePageTours } from "@/components/tour/PageTours";
 import { DecisionForm } from "./DecisionForm";
 import { ReadOnlyAnnotationViewer } from "./ReadOnlyAnnotationViewer";
 
-function Section({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
+function Section({ title, children, right, tour }: { title: string; children: ReactNode; right?: ReactNode; tour?: string }) {
   return (
-    <section className="border-b border-line px-3 py-2">
+    <section data-tour={tour} className="border-b border-line px-3 py-2">
       <div className="mb-1.5 flex items-center justify-between"><h3 className="text-[12px] font-semibold">{title}</h3>{right}</div>
       {children}
     </section>
@@ -31,6 +34,8 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [frame, setFrame] = useState(0);
   const [assignErr, setAssignErr] = useState<string | null>(null);
+  usePageTours(["review-first-open"], { hasRubric: detail.rubric.length > 0 });
+  const pickObject = (id: string | null) => { if (id) emitTourEvent("select-object", id); setSelectedId(id); };
 
   const cubs = cuboidsOf(doc, frame);
   const refList = useMemo(() => (reference ? (reference.frames?.length ? reference.frames.find((f) => f.index === frame)?.cuboids ?? [] : frame === 0 ? reference.cuboids : []) : []), [reference, frame]);
@@ -69,14 +74,15 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
           <span className="text-[12px] text-muted">Reviewer: {detail.reviewer?.name ?? "unassigned"}</span>
           {detail.reviewer?.id !== currentUserId && <Button onClick={() => void assignToMe()} data-testid="assign-me">Assign to me</Button>}
           {assignErr && <span className="text-[12px] text-red-700">{assignErr}</span>}
-          <label className="flex cursor-pointer items-center gap-1.5 text-[12px]">
-            <input type="checkbox" checked={showRef} onChange={(e) => setShowRef(e.target.checked)} data-testid="toggle-reference" />
+          <label className="flex cursor-pointer items-center gap-1.5 text-[12px]" data-tour="rv-toggle-ref">
+            <input type="checkbox" checked={showRef} onChange={(e) => { emitTourEvent("toggle-reference", e.target.checked); setShowRef(e.target.checked); }} data-testid="toggle-reference" />
             Show reference <span className="text-muted">{isSeg ? "(point labels)" : "(dashed white boxes)"}</span>
           </label>
+          <HelpMenu compact />
         </div>
       </header>
       <div className="flex min-h-0 flex-1">
-        <aside className="w-[340px] shrink-0 overflow-y-auto border-r border-line" data-testid="review-left">
+        <aside className="w-[340px] shrink-0 overflow-y-auto border-r border-line" data-testid="review-left" data-tour="rv-left">
           <Section title="Submission">
             <dl className="grid grid-cols-[84px_1fr] gap-y-0.5 text-[12px]">
               <dt className="text-muted">Trainee</dt><dd>{detail.trainee.name} <span className="text-muted">{detail.trainee.email}</span></dd>
@@ -86,7 +92,7 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
               <dt className="text-muted">Version</dt><dd>v{detail.submission.versionNumber} (immutable)</dd>
             </dl>
           </Section>
-          <Section title="Attempt history">
+          <Section title="Attempt history" tour="rv-history">
             <table className="w-full text-[12px]" data-testid="history-table">
               <thead><tr><th className={th}>#</th><th className={th}>Submitted</th><th className={th}>Result</th><th className={th}>Score</th></tr></thead>
               <tbody>
@@ -105,7 +111,7 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
             </table>
             {detail.versions.filter((v) => v.feedback).map((v) => <p key={v.versionNumber} className="mt-1 text-[11px] text-muted">v{v.versionNumber}: {v.feedback}</p>)}
           </Section>
-          <Section title="Advisory metrics" right={<span className="text-[11px] text-muted">auto, not a score</span>}>
+          <Section title="Advisory metrics" tour="rv-metrics" right={<span className="text-[11px] text-muted">auto, not a score</span>}>
             {metricRows.length === 0 ? <p className="text-[12px] text-muted">No metrics recorded.</p> : (
               <table className="w-full text-[12px]" data-testid="metrics-table">
                 <tbody>
@@ -117,13 +123,13 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
             )}
           </Section>
           {task.annotationType !== "SEMANTIC_SEG" && task.annotationType !== "INSTANCE_SEG" && (
-            <Section title={`Objects (frame ${frame + 1}): ${cubs.length}`}>
+            <Section title={`Objects (frame ${frame + 1}): ${cubs.length}`} tour="rv-objects">
               <ul className="space-y-0.5" data-testid="objects-list">
                 {cubs.map((c) => {
                   const m = match.get(c.id);
                   return (
                     <li key={c.id}>
-                      <button type="button" onClick={() => setSelectedId(c.id === selectedId ? null : c.id)} className={`flex w-full items-center justify-between rounded px-1.5 py-0.5 text-left text-[12px] ${c.id === selectedId ? "bg-accent-tint" : "hover:bg-panel"}`}>
+                      <button type="button" onClick={() => pickObject(c.id === selectedId ? null : c.id)} className={`flex w-full items-center justify-between rounded px-1.5 py-0.5 text-left text-[12px] ${c.id === selectedId ? "bg-accent-tint" : "hover:bg-panel"}`}>
                         <span>{c.label}{c.trackId !== undefined ? ` #${c.trackId}` : ""}</span>
                         <span className="text-muted">{m ? `IoU ${m.iou.toFixed(2)}` : "no match"}</span>
                       </button>
@@ -174,7 +180,7 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
             </Section>
           )}
           {detail.rubric.length > 0 && (
-            <Section title="Rubric">
+            <Section title="Rubric" tour="rv-rubric">
               <ul className="space-y-1.5 text-[12px]" data-testid="rubric">
                 {detail.rubric.map((r) => (
                   <li key={r.key}>
@@ -188,9 +194,9 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
           )}
         </aside>
         <main className="relative min-w-0 flex-1">
-          <ReadOnlyAnnotationViewer task={task} document={doc} reference={reference} showReference={showRef} selectedId={selectedId} frame={frame} onSelect={setSelectedId} onFrameChange={setFrame} />
+          <ReadOnlyAnnotationViewer task={task} document={doc} reference={reference} showReference={showRef} selectedId={selectedId} frame={frame} onSelect={pickObject} onFrameChange={setFrame} />
         </main>
-        <aside className="w-[340px] shrink-0 overflow-y-auto border-l border-line" data-testid="review-right">
+        <aside className="w-[340px] shrink-0 overflow-y-auto border-l border-line" data-testid="review-right" data-tour="rv-decision">
           <DecisionForm key={detail.submission.id} detail={detail} />
         </aside>
       </div>

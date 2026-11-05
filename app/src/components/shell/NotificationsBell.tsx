@@ -77,7 +77,7 @@ export function NotificationsBell({ initialUnread }: { initialUnread: number }) 
   };
 
   return (
-    <div className="relative" ref={box}>
+    <div className="relative" ref={box} data-tour="topbar-bell">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open} data-testid="notifications-button"
         className="relative flex h-8 w-8 items-center justify-center rounded-md border border-line hover:bg-panel" aria-label={`Notifications (${unread} unread)`}>
         <Bell />

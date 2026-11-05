@@ -20,6 +20,7 @@ Object.assign(process.env, {
   DEFAULT_PROGRAM_SLUG: "foundations",
   LOGIN_RATE_LIMIT_PER_MIN: "1000",
   NEXT_TELEMETRY_DISABLED: "1",
+  NEXT_DIST_DIR: ".next-e2e",
 });
 delete process.env.AUTH_URL;
 delete process.env.NEXTAUTH_URL;

@@ -1,6 +1,7 @@
 /** Fixture commands that need the app's service layer. Invoked via `npx tsx` from e2e/helpers/db.ts. */
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { ALL_TOUR_KEYS } from "./constants";
 import { enrollInActiveProgram } from "../../src/lib/enroll";
 import { completeLesson, submitModuleQuiz } from "../../src/lib/learn/service";
 
@@ -12,6 +13,7 @@ async function main() {
     const [name, email, password] = args;
     const user = await db.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 8), role: "TRAINEE" } });
     await enrollInActiveProgram(user.id);
+    if (process.env.E2E_SKIP_TOUR_SEED !== "1") for (const tourKey of ALL_TOUR_KEYS) await db.tourProgress.create({ data: { userId: user.id, tourKey, status: "COMPLETED", completedAt: new Date() } });
   } else if (cmd === "complete-mandatory") {
     const userId = args[0];
     const enrollment = await db.enrollment.findFirstOrThrow({ where: { userId }, orderBy: { enrolledAt: "asc" } });

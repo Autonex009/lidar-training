@@ -51,3 +51,7 @@ playwright-report/
 prisma/test-integration.db*
 .verify-shots
 prisma/e2e.db*
+
+# guided tours tests / alternate Next output dirs
+prisma/test-tours.db*
+/.next-*

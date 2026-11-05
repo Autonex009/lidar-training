@@ -74,6 +74,37 @@ Interpretation ambiguities recorded while converting the Tonic guideline documen
 - Y-up assets are view-only in the annotate tools.
 - Scoring is advisory (class match, centre error, 3D IoU, yaw error, point-label accuracy). The reviewer sets the final score; nothing auto-approves.
 
+## Guided tours
+
+Step-by-step onboarding dialogs (intro modal, then bottom-centre step cards over the live page) in the style of the reference screenshots. A step completes only when the user actually does the action; Back / progress dots / Next sit at the bottom, Next is enabled once the step is done (or immediately for informational steps), Enter = Next, Esc or the X = skip (with confirmation). Optional spotlight dims everything except a `data-tour="..."` element.
+
+| Tour key | Trigger (auto-starts once, when NOT_STARTED) | Steps | Completion |
+| --- | --- | --- | --- |
+| `welcome` | first visit to `/learn`, all roles | 7 | mostly Next; last step = click the first module |
+| `navigation-3d` | first viewer on a Learn lesson (sample cloud / navigation lessons) and first task open; also offered before any task tour (chained) | 10 (9 without frames) | viewer controls: device choice, rotate, zoom, W A S D (all four), Q/E (both), pan, camera target (Ctrl/Cmd+click), frames (arrow keys, only for multi-frame assets), Reset camera |
+| `task-cuboid` | first open of a CUBOID / MIXED task | 13 (12 without required attributes) | editor actions: `addCuboid`, `select`, `moveCuboid`, `resizeCuboid`, `rotateCuboid`, `fitCuboid`, `setLabel`, `setAttribute`, `undo`, `addFlag` (optional), `draft-saved`, Submit explained (never forced) |
+| `task-segmentation` | first open of a SEMANTIC_SEG / INSTANCE_SEG task | 9 | `tool:brush`, `brush-radius`, `activeLabel`, `paintPoints`, `tool:lasso`, `hide-label`, `undo`, `draft-saved` |
+| `task-tracking` | first TRACKING task | 7 | `addCuboid`, `frame-changed`, `copyFrame`, `setTrackId`, `draft-saved` |
+| `task-inspection` | first INSPECTION task | 5-6 | checkpoints (Next), `control:preset` x2, `tool:mark`, `setAnswer`, `draft-saved` |
+| `task-identification` | first IDENTIFICATION task | 6-7 | `select`, `setLabel`, `addFlag` (optional), `setAnswer`, `draft-saved` |
+| `task-error-detection` | first ERROR_DETECTION task | 6 | `select`, `addError`, second `addError` (optional), `draft-saved` |
+| `review-first-open` | first `/review/[id]` (REVIEWER, ADMIN) | 7-8 | Next, `toggle-reference`, `select-object`, decision form / rubric explained |
+
+- **Progress** is per user in `TourProgress` (`NOT_STARTED / IN_PROGRESS / COMPLETED / SKIPPED`, `lastStepIndex`), written by `POST /api/tours/[key]` (debounced 500 ms while stepping, immediately on finish/skip; read with `GET /api/tours`). Transitions log `TOUR_STARTED`, `TOUR_COMPLETED`, `TOUR_SKIPPED` in the activity log. COMPLETED and SKIPPED never auto-start again; IN_PROGRESS shows a small "Resume tutorial" pill instead of a modal.
+- **Help menu**: the "?" button in the top bar (and in the Annotate/Review workspace headers) lists the tutorials relevant to the current page and role with their status and a Start / Restart button (always forces a restart from the intro).
+- **Navigation input device**: the navigation tour asks Mouse or Trackpad and stores it in `localStorage.navInputDevice`. Mouse keeps the existing bindings. Trackpad: two-finger scroll rotates, pinch (ctrl+wheel) zooms, shift + scroll pans (`src/components/viewer/wheelBindings.ts`). In Fly mode W A S D / Q E move, Left/Right arrows step frames (when nothing is selected).
+- **Lessons**: the old inline step dialog of the navigation lesson is replaced by the `navigation-3d` tour; lesson checkpoints still tick from direct control use and also when the tour completes. A "Start navigation tutorial" button restarts it.
+
+### Adding a tour
+
+1. Add `src/components/tour/tours/<name>.ts` exporting a `TourDefinition` (`key`, `title`, `intro`, `steps`, `scope: "global" | "page"`, optional `roles`). Each step has `title`, one-line `instruction` (`**bold**` allowed), optional `keycaps` (text or glyph ids), `spotlight: { selector: "<data-tour value>" }`, optional `choice`, `allowSkip`, `when(ctx)` and a `complete` rule: `control` (viewer control, `needs` = all listed details), `event` (any `emitTourEvent(name)`), `click-target`, `choice`, `manual`, `timer`, or `all` of several.
+2. Register it in `src/components/tour/registry.ts`.
+3. Add `data-tour="..."` to the real elements you spotlight.
+4. On the page, call `usePageTours(["your-key"], ctx)` (or render `<PageTours keys={...} />` from a server page). Keys are tried in order: the first NOT_STARTED one auto-starts, so chain a prerequisite tour by listing it first.
+5. Emit the events your steps wait for with `emitTourEvent(name, detail)` from `src/lib/tour/events.ts` (the Annotate editor already announces every reducer action, plus `draft-saved`, `tool:<mode>`, `frame-changed`, ...; the viewer announces `control:<kind>`).
+
+Pure logic (step completion, resume, persistence payloads) lives in `src/components/tour/machine.ts` and is unit-tested.
+
 ## Testing
 
 ```bash
@@ -86,7 +117,7 @@ npm run lint
 
 `npm run test:e2e` starts its own `next dev` on port 3210 (`E2E_PORT` to change) with `DATABASE_URL=file:./e2e.db` (recreated every run). Global setup runs `prisma migrate deploy`, `assets:generate` if assets are missing, `prisma db seed`, creates the admin through the real `/setup` form and a reviewer through the admin API. Specs run serially and share state through the database:
 
-- T1 new trainee (register, locked items inert) - T2 progression persists across logout/login - T3 failed final assessment keeps the lock - T4 pass unlocks, topbar 100% - T5 annotate TASK-03 (real mouse drag on the canvas, relabel, save, reload, submit) - T6 reviewer requests revision - T7 trainee sees notification and banner, resubmits (attempt 2) - T8 approval with score appears in Complete - T9 admin timeline has LOGIN, LESSON_COMPLETED, QUIZ_ATTEMPTED, TASK_SUBMITTED, REVISION_REQUESTED, TASK_APPROVED - T10 ownership, role and ground-truth leak checks.
+- T1 new trainee (register, locked items inert) - T2 progression persists across logout/login - T3 failed final assessment keeps the lock - T4 pass unlocks, topbar 100% - T5 annotate TASK-03 (real mouse drag on the canvas, relabel, save, reload, submit) - T6 reviewer requests revision - T7 trainee sees notification and banner, resubmits (attempt 2) - T8 approval with score appears in Complete - T9 admin timeline has LOGIN, LESSON_COMPLETED, QUIZ_ATTEMPTED, TASK_SUBMITTED, REVISION_REQUESTED, TASK_APPROVED - T10 ownership, role and ground-truth leak checks - T11 guided tours (welcome tour, navigation tour with real mouse/keyboard actions, first-task cuboid tour with skip/resume/restart, Help menu, reviewer tour). Other specs mark all tours COMPLETED for their users through fixtures so dialogs never block them.
 
 Fixtures that would take too long through the UI (completing all mandatory modules for T3, approving prerequisite tasks, creating the second trainee) use the service layer or Prisma directly; every assertion is made through the UI or HTTP.
 

@@ -30,7 +30,7 @@ export function FrameTimeline({ frameIndex, frameCount, onFrame, marks }: FrameT
 
   const btn = "flex h-7 w-7 items-center justify-center rounded border border-transparent text-ink hover:bg-panel disabled:opacity-40";
   return (
-    <div className="flex h-10 shrink-0 items-center gap-2 border-t border-line bg-surface px-3 text-[12px] text-muted">
+    <div className="flex h-10 shrink-0 items-center gap-2 border-t border-line bg-surface px-3 text-[12px] text-muted" data-tour="viewer-timeline">
       <button type="button" className={btn} aria-label="Previous frame" disabled={frameIndex <= 0} onClick={() => onFrame(frameIndex - 1)}>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M3 2h1.5v10H3zM12 2v10L5.5 7z" /></svg>
       </button>

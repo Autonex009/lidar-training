@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { PointCloudViewer, assetFrameSource, type ControlKind } from "@/components/viewer";
+import { usePageTours } from "@/components/tour/PageTours";
 import { Checklist } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 
@@ -12,6 +13,7 @@ export function CloudWidget({ checkpoints, done, onDone, instructions, asset }: 
   const frames = useMemo(() => (asset ? assetFrameSource(asset.assetId, asset.frameCount) : null), [asset]);
   const firstUse = useRef<number | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  usePageTours(["navigation-3d"], { hasFrames: (asset?.frameCount ?? 1) > 1 });
   const doneRef = useRef(done);
   doneRef.current = done;
   const cpRef = useRef(checkpoints);

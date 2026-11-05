@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { NormalizedCloud, UpAxis } from "@/lib/pointcloud/types";
+import { getInputDevice } from "@/lib/tour/inputDevice";
+import { wheelAction } from "./wheelBindings";
 import type {
   CameraState, ColorMode, ControlKind, CuboidOverlay, EngineHandlers, EngineOptions, FrameSource, NavigationProfile, PointPick, Preset,
 } from "./types";
@@ -148,6 +150,7 @@ export class ViewerEngine {
     this.bind(this.canvas, "pointerup", (e) => this.onPointerUp(e as PointerEvent));
     this.bind(this.canvas, "pointerenter", () => { this.hovered = true; this.focusIfIdle(); });
     this.bind(this.canvas, "pointerleave", () => { this.hovered = false; this.reticle.visible = false; this.dirty = true; });
+    this.bind(this.canvas, "wheel", (e) => this.onTrackpadWheel(e as WheelEvent), true, { passive: false });
     this.bind(this.canvas, "wheel", (e) => this.onWheel(e as WheelEvent), false, { passive: false });
     this.bind(this.canvas, "dblclick", (e) => this.onDblClick(e as MouseEvent));
     this.bind(this.canvas, "contextmenu", (e) => e.preventDefault());
@@ -209,6 +212,7 @@ export class ViewerEngine {
     this.handlers.onFrameChange?.(idx, cloud);
   }
 
+  get isHovered() { return this.hovered; }
   get frameIndex() { return this.currentFrame; }
   get frameCount() { return this.frameSource?.frameCount ?? 1; }
   getCloud() { return this.cloud; }
@@ -721,6 +725,54 @@ export class ViewerEngine {
     const fwd = new THREE.Vector3(); this.camera.getWorldDirection(fwd);
     const step = -Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120) / 120 * this.radius * 0.06;
     this.camera.position.addScaledVector(fwd, step);
+    this.dirty = true;
+  }
+
+  /** Trackpad bindings: two-finger scroll rotates, pinch zooms, shift + scroll pans. Mouse users keep the wheel-zooms behaviour. */
+  protected onTrackpadWheel(e: WheelEvent) {
+    if (!this.navEnabled || getInputDevice() !== "trackpad") return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const k = e.deltaMode === 1 ? 16 : 1;
+    const dx = e.deltaX * k, dy = e.deltaY * k;
+    const action = wheelAction("trackpad", e);
+    const orbit = this.profile === "orbit";
+    const tgt = this.currentTarget();
+    if (action === "zoom") {
+      this.emitControl("zoom", "pinch");
+      const f = Math.exp(Math.max(-60, Math.min(60, dy)) * 0.01);
+      if (orbit) {
+        const off = this.camera.position.clone().sub(tgt);
+        const len = Math.min(Math.max(off.length() * f, this.radius * 0.05), this.radius * 8);
+        this.camera.position.copy(tgt).add(off.setLength(len));
+        this.orbit.update();
+      } else {
+        const fwd = new THREE.Vector3(); this.camera.getWorldDirection(fwd);
+        this.camera.position.addScaledVector(fwd, -Math.max(-60, Math.min(60, dy)) * 0.01 * this.radius * 0.3);
+      }
+    } else if (action === "pan") {
+      this.emitControl("pan", "scroll");
+      const s = this.camera.position.distanceTo(tgt) * 0.0015 + this.radius * 0.0005;
+      const right = new THREE.Vector3().setFromMatrixColumn(this.camera.matrix, 0);
+      const upv = new THREE.Vector3().setFromMatrixColumn(this.camera.matrix, 1);
+      const d = new THREE.Vector3().addScaledVector(right, dx * s).addScaledVector(upv, -dy * s);
+      this.camera.position.add(d);
+      if (orbit) { this.orbit.target.add(d); this.target.copy(this.orbit.target); this.orbit.update(); }
+    } else {
+      this.emitControl("rotate", "scroll");
+      if (orbit) {
+        const off = this.camera.position.clone().sub(tgt);
+        const sph = new THREE.Spherical().setFromVector3(off);
+        sph.theta -= dx * 0.005;
+        sph.phi = Math.max(0.05, Math.min(Math.PI - 0.05, sph.phi - dy * 0.005));
+        off.setFromSpherical(sph);
+        this.camera.position.copy(tgt).add(off);
+        this.orbit.update();
+      } else {
+        this.yaw -= dx * 0.004; this.pitch -= dy * 0.004;
+        this.applyFlyAngles();
+      }
+    }
     this.dirty = true;
   }
 

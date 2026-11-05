@@ -2,6 +2,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
+import { ALL_TOUR_KEYS } from "./constants";
 
 // DATABASE_URL is set by playwright.config.ts before workers start.
 export const db = new PrismaClient();
@@ -54,4 +55,11 @@ export async function approvePrerequisites(userId: string, codes = ["TASK-01", "
 
 export async function assignmentFor(userId: string, code: string) {
   return db.taskAssignment.findFirstOrThrow({ where: { userId, task: { code } } });
+}
+
+/** Marks every guided tour COMPLETED for the user (the tours themselves are covered by 11-tours.spec.ts). */
+export async function seedToursDone(userId: string) {
+  for (const tourKey of ALL_TOUR_KEYS) {
+    await db.tourProgress.upsert({ where: { userId_tourKey: { userId, tourKey } }, create: { userId, tourKey, status: "COMPLETED", lastStepIndex: 0, completedAt: new Date() }, update: { status: "COMPLETED" } });
+  }
 }

@@ -9,7 +9,12 @@ import { classColor, UNLABELED_COLOR } from "@/lib/annotation/colors";
 import { fitCuboidToPoints } from "@/lib/annotation/fit";
 import { nudgeCuboid } from "@/lib/annotation/nudge";
 import { canRedo, canUndo } from "@/lib/annotation/history";
-import { editorReducer, initEditor, newId, type Edit } from "@/lib/annotation/reducer";
+import { editorReducer, initEditor, newId, type Edit, type EditorAction } from "@/lib/annotation/reducer";
+import { tourEventsForAction } from "@/lib/annotation/tourEvents";
+import { emitTourEvent } from "@/lib/tour/events";
+import { HelpMenu } from "@/components/tour/HelpMenu";
+import { usePageTours } from "@/components/tour/PageTours";
+import { taskTourKey } from "@/components/tour/registry";
 import { SpatialGrid } from "@/lib/annotation/spatial";
 import { allCuboids, b64ToU16, cuboidsOf, u16ToB64, type Cuboid, type Vec3 } from "@/lib/annotation/types";
 import { validateForSubmit } from "@/lib/annotation/validate";
@@ -40,19 +45,27 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
   const readOnly = data.readOnly;
   const toolsOff = task.asset.upAxis !== "Z";
 
-  const [state, dispatch] = useReducer(editorReducer, data.document, initEditor);
+  const [state, rawDispatch] = useReducer(editorReducer, data.document, initEditor);
+  /** Every editor action is also announced to guided tours (select, addCuboid, moveCuboid, undo...). */
+  const dispatch = useCallback((a: EditorAction) => {
+    for (const n of tourEventsForAction(a)) emitTourEvent(n, a);
+    rawDispatch(a);
+  }, []);
   const doc = state.history.present;
   const selectedId = state.selectedId;
   const [frame, setFrameState] = useState(0);
-  const [mode, setModeState] = useState<ToolMode>(isSeg ? "brush" : cuboidTask ? "create" : "select");
-  const [activeLabel, setActiveLabel] = useState(task.classes[0]?.name ?? "");
+  const [mode, setModeRaw] = useState<ToolMode>(isSeg ? "brush" : cuboidTask ? "create" : "select");
+  const setModeState = useCallback((m: ToolMode) => { emitTourEvent(`tool:${m}`); setModeRaw(m); }, []);
+  const [activeLabel, setActiveLabelRaw] = useState(task.classes[0]?.name ?? "");
+  const setActiveLabel = useCallback((n: string) => { emitTourEvent("activeLabel", n); setActiveLabelRaw(n); }, []);
   const [pending, setPending] = useState<Pending>(null);
   const [drawer, setDrawer] = useState(false);
   const [help, setHelp] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
-  const [brush, setBrush] = useState(0.6);
+  const [brush, setBrushRaw] = useState(0.6);
+  const setBrush = useCallback((n: number) => { emitTourEvent("brush-radius", n); setBrushRaw(n); }, []);
   const [instance, setInstance] = useState(1);
   const [hidden, setHidden] = useState<Set<number>>(new Set());
   const [display, setDisplay] = useState<Uint16Array | null>(null);
@@ -62,6 +75,16 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
   const tool = useRef<CuboidTool | null>(null);
   const started = useRef(false);
   const autosave = useAutosave({ assignmentId: data.assignmentId, doc, enabled: !readOnly, savedAt: data.savedAt });
+
+  // Guided tours: navigation first (if not done), then the walkthrough for this annotation type. Not offered on read-only views.
+  const taskKey = taskTourKey(type);
+  usePageTours(readOnly ? [] : ["navigation-3d", ...(taskKey ? [taskKey] : [])], {
+    hasFrames: task.asset.frameCount > 1,
+    hasRequiredAttributes: task.requiredAttributes.length > 0,
+    hasQuestions: task.questions.length > 0,
+  });
+
+  useEffect(() => { if (drawer) emitTourEvent("instructions-opened"); }, [drawer]);
 
   const live = useRef({ doc, frame, selectedId, activeLabel, readOnly, hidden, mode, instance, display: null as Uint16Array | null });
   live.current = { doc, frame, selectedId, activeLabel, readOnly, hidden, mode, instance, display };
@@ -80,8 +103,8 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
       void fetch(`/api/assignments/${data.assignmentId}/events`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ event: "annotation_started" }) }).catch(() => undefined);
     }
     dispatch({ type: "edit", edit: e, select });
-  }, [data.assignmentId]);
-  const select = useCallback((id: string | null) => dispatch({ type: "select", id }), []);
+  }, [data.assignmentId, dispatch]);
+  const select = useCallback((id: string | null) => dispatch({ type: "select", id }), [dispatch]);
   const cubs = cuboidsOf(doc, frame);
   const selected = cubs.find((c) => c.id === selectedId) ?? null;
 
@@ -216,6 +239,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
   const onFrameChange = useCallback((i: number) => {
     const cur = live.current;
     const sel = cuboidsOf(cur.doc, cur.frame).find((c) => c.id === cur.selectedId);
+    if (i !== cur.frame) emitTourEvent("frame-changed", i);
     setFrameState(i);
     const next = sel?.trackId !== undefined ? cuboidsOf(cur.doc, i).find((c) => c.trackId === sel.trackId) : null;
     dispatch({ type: "select", id: next?.id ?? null });
@@ -225,7 +249,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
       showArrays(i);
       if (cloud) { const g = grids.current.get(i) ?? new SpatialGrid(cloud.positions, 0.5); grids.current.set(i, g); tool.current?.setGrid(g); }
     }
-  }, [isSeg, showArrays]);
+  }, [isSeg, showArrays, dispatch]);
 
   const onControlUsed = useCallback((kind: ControlKind, detail?: string) => {
     for (const cp of task.checkpoints) {
@@ -260,6 +284,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
     if (!eng || !pos) return;
     const r = fitCuboidToPoints(pos, selected, { margin: 0.3, groundZ: eng.groundLevel, headroom: 0.3 });
     if (r) edit({ type: "patchCuboid", frame, id: selected.id, patch: { center: r.center, dims: r.dims } });
+    emitTourEvent("fitCuboid");
   };
   const duplicate = () => {
     if (!selected) return;
@@ -365,10 +390,10 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
     <>
       <span className="mx-1 h-4 w-px bg-line" />
       {tools.filter((t) => t.show).map((t) => (
-        <ToolButton key={t.m} label={t.label} active={mode === t.m} disabled={readOnly || toolsOff} onClick={() => setModeState(t.m)}>{ICON[t.icon]}</ToolButton>
+        <ToolButton key={t.m} dataTour={`ws-tool-${t.m}`} label={t.label} active={mode === t.m} disabled={readOnly || toolsOff} onClick={() => setModeState(t.m)}>{ICON[t.icon]}</ToolButton>
       ))}
       <span className="mx-1 h-4 w-px bg-line" />
-      <ToolButton label="Undo (Ctrl+Z)" disabled={readOnly || !canUndo(state.history)} onClick={() => dispatch({ type: "undo" })}>{ICON.undo}</ToolButton>
+      <ToolButton dataTour="ws-undo" label="Undo (Ctrl+Z)" disabled={readOnly || !canUndo(state.history)} onClick={() => dispatch({ type: "undo" })}>{ICON.undo}</ToolButton>
       <ToolButton label="Redo (Ctrl+Shift+Z)" disabled={readOnly || !canRedo(state.history)} onClick={() => dispatch({ type: "redo" })}>{ICON.redo}</ToolButton>
       <ToolButton label="Keyboard shortcuts (?)" onClick={() => setHelp(true)}>{ICON.help}</ToolButton>
     </>
@@ -392,14 +417,15 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
         <Link href="/annotate" className="text-[12px] text-muted underline" onClick={(e) => { if (autosave.status === "dirty") { e.preventDefault(); void autosave.save().then(() => router.push("/annotate")); } }}>Tasks</Link>
         <span className="font-semibold">{task.code}</span>
         <span className="truncate text-muted">{task.title}</span>
-        <Button className="ml-2" onClick={() => setDrawer((d) => !d)}>Instructions</Button>
+        <Button className="ml-2" data-tour="ws-instructions" onClick={() => setDrawer((d) => !d)}>Instructions</Button>
         <Button onClick={() => document.getElementById("flags-section")?.scrollIntoView({ block: "nearest" })}>Issues / Flags ({flagsHere.length})</Button>
         <div className="ml-auto flex items-center gap-2">
           <span className={`text-[12px] ${autosave.status === "error" ? "text-red-700" : "text-muted"}`} data-testid="save-status">{saveText}</span>
-          <Button disabled={readOnly} onClick={() => void autosave.save()}>Save draft</Button>
-          <Button variant="primary" disabled={readOnly} onClick={() => void openSubmit()} data-testid="submit-button">Submit</Button>
+          <Button data-tour="ws-save" disabled={readOnly} onClick={() => void autosave.save()}>Save draft</Button>
+          <Button variant="primary" data-tour="ws-submit" disabled={readOnly} onClick={() => void openSubmit()} data-testid="submit-button">Submit</Button>
           <Button disabled={!data.nav.prevId} onClick={() => void navTo(data.nav.prevId)}>Previous</Button>
           <Button disabled={!data.nav.nextId} onClick={() => void navTo(data.nav.nextId)}>Next</Button>
+          <HelpMenu compact />
         </div>
       </header>
       {bannerText && <div className="border-b border-line bg-amber-50 px-3 py-1.5 text-[12px] text-amber-800" data-testid="status-banner">{bannerText}</div>}
@@ -416,7 +442,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
           <Section title="Labels" right={<span className="text-[11px] text-muted">{allCuboids(doc).length ? `${cubs.length} in frame` : ""}</span>}>
             {isSeg ? (
               <div className="space-y-1.5">
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1" data-tour="ws-palette">
                   {task.classes.map((c, i) => (
                     <button key={c.name} type="button" disabled={readOnly} onClick={() => setActiveLabel(c.name)} title={`${i < 9 ? `Key ${i + 1}` : ""}`}
                       className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-[12px] ${activeLabel === c.name ? "border-ink bg-accent-tint" : "border-line"}`}>
@@ -425,7 +451,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                   ))}
                   <button type="button" disabled={readOnly} onClick={() => setActiveLabel("")} className={`rounded border px-1.5 py-0.5 text-[12px] ${activeLabel === "" ? "border-ink bg-accent-tint" : "border-line"}`}>Erase</button>
                 </div>
-                <label className="flex items-center gap-2 text-[12px]"><span className="w-16 text-muted">Brush {brush.toFixed(1)} m</span>
+                <label className="flex items-center gap-2 text-[12px]" data-tour="ws-brush"><span className="w-16 text-muted">Brush {brush.toFixed(1)} m</span>
                   <input type="range" min={0.1} max={3} step={0.1} value={brush} onChange={(e) => setBrush(Number(e.target.value))} className="flex-1 accent-[#8aa81d]" aria-label="Brush radius" /></label>
                 {instanceDisplay && (
                   <div className="flex items-center gap-2 text-[12px]"><span>Instance {instance}</span>
@@ -433,9 +459,9 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                     <button type="button" className="h-6 rounded border border-line px-2 hover:bg-panel" disabled={readOnly || instance < 2} onClick={() => setInstance((n) => Math.max(1, n - 1))}>Prev</button></div>
                 )}
                 <p className="text-[11px] text-muted">{labeledCount.toLocaleString()} points labelled. Hide a class to reveal unlabelled points.</p>
-                <div className="flex flex-wrap gap-2 text-[12px]">
+                <div className="flex flex-wrap gap-2 text-[12px]" data-tour="ws-hide">
                   {task.classes.map((c) => (
-                    <label key={c.name} className="flex items-center gap-1"><input type="checkbox" checked={!hidden.has(c.classId)} onChange={() => setHidden((h) => { const n = new Set(h); if (n.has(c.classId)) n.delete(c.classId); else n.add(c.classId); return n; })} />{c.name}</label>
+                    <label key={c.name} className="flex items-center gap-1"><input type="checkbox" checked={!hidden.has(c.classId)} onChange={() => { emitTourEvent("hide-label", c.name); setHidden((h) => { const n = new Set(h); if (n.has(c.classId)) n.delete(c.classId); else n.add(c.classId); return n; }); }} />{c.name}</label>
                   ))}
                 </div>
                 <p className="text-[11px] text-muted">Lasso selects everything under the outline regardless of depth: rotate to a side view first.</p>
@@ -448,7 +474,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                       {task.classes.map((c, i) => <option key={c.name} value={c.name}>{i < 9 ? `${i + 1} · ` : ""}{c.name}</option>)}
                     </select></label>
                 )}
-                {type !== "INSPECTION" && <ObjectsList {...panelProps} />}
+                {type !== "INSPECTION" && <div data-tour="ws-objects"><ObjectsList {...panelProps} /></div>}
                 {selected && type !== "INSPECTION" && (
                   <AttributeEditor {...panelProps} cuboid={selected} onFit={fit} onDuplicate={duplicate} onDelete={del}
                     onFlag={() => setPending({ kind: "flag", cuboidId: selected.id })}
@@ -456,12 +482,12 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                 )}
               </>
             )}
-            {type === "INSPECTION" && <CheckpointsPanel task={task} doc={doc} />}
+            {type === "INSPECTION" && <div data-tour="ws-checkpoints"><CheckpointsPanel task={task} doc={doc} /></div>}
           </Section>
           {dupFrames && (
-            <Section title="Tracking" right={<span className="text-[11px] text-muted">Frame {frame + 1}/{task.asset.frameCount}</span>}>
+            <Section id="ws-tracking" title="Tracking" right={<span className="text-[11px] text-muted">Frame {frame + 1}/{task.asset.frameCount}</span>}>
               <div className="mb-1.5 flex flex-wrap gap-1">
-                <button type="button" className="h-6 rounded border border-line px-2 text-[12px] hover:bg-panel disabled:opacity-50" disabled={readOnly || frame < 1} onClick={copyPrev}>Copy boxes from previous frame</button>
+                <button type="button" data-tour="ws-copy-prev" className="h-6 rounded border border-line px-2 text-[12px] hover:bg-panel disabled:opacity-50" disabled={readOnly || frame < 1} onClick={copyPrev}>Copy boxes from previous frame</button>
                 <button type="button" className="h-6 rounded border border-line px-2 text-[12px] hover:bg-panel disabled:opacity-50" disabled={readOnly || !selected} onClick={interpolate}>Interpolate to next keyframe</button>
               </div>
               <TracksPanel {...panelProps} />
@@ -482,7 +508,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
             </Section>
           )}
           {type === "ERROR_DETECTION" && <Section title={`Reported errors (${doc.errorsFound?.length ?? 0})`}><ErrorsList doc={doc} task={task} readOnly={readOnly} onRemove={(id) => edit({ type: "removeError", id })} /></Section>}
-          {task.questions.length > 0 && <Section title="Questions"><QuestionsForm task={task} doc={doc} readOnly={readOnly} onAnswer={(key, value) => edit({ type: "setAnswer", key, value })} /></Section>}
+          {task.questions.length > 0 && <Section id="ws-questions" title="Questions"><QuestionsForm task={task} doc={doc} readOnly={readOnly} onAnswer={(key, value) => edit({ type: "setAnswer", key, value })} /></Section>}
           <Section id="flags-section" title={`Flags (${flagsHere.length})`}>
             <FlagsList flags={flagsHere} readOnly={readOnly} onRemove={(id) => edit({ type: "removeFlag", id })}
               onSelect={(f) => { if (f.frame !== undefined && f.frame !== frame) goFrame(f.frame); if (f.cuboidId) select(f.cuboidId); }} />

@@ -5,6 +5,8 @@ import { pendingReviewCount } from "@/lib/review/service";
 import { getLearningProgressPercent } from "@/lib/progress";
 import { Sidebar, type NavItem } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
+import { TourProvider } from "@/components/tour/TourProvider";
+import { TourOverlay } from "@/components/tour/TourOverlay";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +29,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (user.role === "ADMIN") items.push({ href: "/admin", label: "Admin", icon: "admin", locked: false });
 
   return (
-    <div className="min-h-screen">
-      <Sidebar items={items} />
-      <div className="pl-[250px]">
-        <Topbar name={user.name} email={user.email} role={user.role} progress={progress} unread={unread} />
-        <main className="p-6">{children}</main>
+    <TourProvider role={user.role}>
+      <div className="min-h-screen">
+        <Sidebar items={items} />
+        <div className="pl-[250px]">
+          <Topbar name={user.name} email={user.email} role={user.role} progress={progress} unread={unread} />
+          <main className="p-6">{children}</main>
+        </div>
       </div>
-    </div>
+      <TourOverlay />
+    </TourProvider>
   );
 }

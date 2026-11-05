@@ -30,11 +30,11 @@ function Icon({ d }: { d: ReactNode }) {
   return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>{d}</svg>;
 }
 
-export function ToolButton({ label, active, onClick, disabled, children }: { label: string; active?: boolean; onClick: () => void; disabled?: boolean; children: ReactNode }) {
+export function ToolButton({ label, active, onClick, disabled, children, dataTour }: { label: string; active?: boolean; onClick: () => void; disabled?: boolean; children: ReactNode; dataTour?: string }) {
   return (
     <span className="group relative inline-flex">
       <button
-        type="button" aria-label={label} aria-pressed={active} disabled={disabled} onClick={onClick}
+        type="button" aria-label={label} aria-pressed={active} disabled={disabled} onClick={onClick} data-tour={dataTour}
         className={`flex h-7 w-7 items-center justify-center rounded border text-ink disabled:opacity-40 ${active ? "border-accent bg-accent-tint" : "border-transparent hover:bg-panel"}`}
       >
         {children}
@@ -72,13 +72,13 @@ const MODE_LABEL: Record<ColorMode, string> = { height: "Height", intensity: "In
 
 export function ViewerToolbar(p: ViewerToolbarProps) {
   return (
-    <div className="flex h-9 shrink-0 items-center gap-0.5 border-b border-line bg-surface px-2 text-[12px]">
+    <div className="flex h-9 shrink-0 items-center gap-0.5 border-b border-line bg-surface px-2 text-[12px]" data-tour="viewer-toolbar">
       <ToolButton label="Perspective view" onClick={() => p.onPreset("perspective")}><Cube face="all" /></ToolButton>
       <ToolButton label="Top view" onClick={() => p.onPreset("top")}><Cube face="top" /></ToolButton>
       <ToolButton label="Front view" onClick={() => p.onPreset("front")}><Cube face="front" /></ToolButton>
       <ToolButton label="Side view" onClick={() => p.onPreset("side")}><Cube face="side" /></ToolButton>
       <Sep />
-      <ToolButton label="Reset camera" onClick={p.onReset}><Icon d={I.reset} /></ToolButton>
+      <ToolButton label="Reset camera" dataTour="viewer-reset" onClick={p.onReset}><Icon d={I.reset} /></ToolButton>
       <ToolButton label="Fit to scene" onClick={p.onFit}><Icon d={I.fit} /></ToolButton>
       <Sep />
       <label className="flex items-center gap-1.5 text-muted" title="Point size">

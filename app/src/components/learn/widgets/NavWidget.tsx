@@ -1,30 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { PointCloudViewer, assetFrameSource, type ControlKind } from "@/components/viewer";
-import { Keycap, StepDialog } from "./Parts";
+import { usePageTours } from "@/components/tour/PageTours";
+import { useTourOptional } from "@/components/tour/TourProvider";
+import { Button } from "@/components/ui/Button";
+import { Checklist } from "./Parts";
 import type { AssetRef, WidgetProps } from "./types";
 
-const HINTS: Record<string, { kind: ControlKind; detail?: string; keys: string[]; text: string }> = {
-  rotate: { kind: "rotate", keys: ["Left-drag"], text: "Drag with the left mouse button to rotate around the scene." },
-  pan: { kind: "pan", keys: ["Right-drag", "or Shift+drag"], text: "Drag with the right mouse button to slide the view sideways." },
-  zoom: { kind: "zoom", keys: ["Scroll"], text: "Scroll the mouse wheel (or pinch) to zoom in and out." },
-  reset: { kind: "reset", keys: ["Reset"], text: "Press Reset in the viewer toolbar to return to the starting view." },
-  top: { kind: "preset", detail: "top", keys: ["Top"], text: "Press Top in the toolbar to look straight down." },
-  front: { kind: "preset", detail: "front", keys: ["Front"], text: "Press Front in the toolbar to look from the front." },
-  side: { kind: "preset", detail: "side", keys: ["Side"], text: "Press Side in the toolbar to look from the side." },
+/** Checkpoint key -> viewer control (and preset detail). Used when the user just tries controls without the tutorial. */
+const CONTROL: Record<string, { kind: ControlKind; detail?: string }> = {
+  rotate: { kind: "rotate" }, pan: { kind: "pan" }, zoom: { kind: "zoom" }, reset: { kind: "reset" },
+  top: { kind: "preset", detail: "top" }, front: { kind: "preset", detail: "front" }, side: { kind: "preset", detail: "side" },
 };
+/** Checkpoints the guided navigation tour covers; they tick when the tour completes. */
+const TOUR_COVERS = new Set(["rotate", "pan", "zoom", "reset"]);
 
-/** Viewer with a bottom-centred step dialog; one step per checkpoint, detected via onControlUsed. */
+/**
+ * Practice viewer. The step-by-step dialog is the shared guided-tour engine (`navigation-3d`), which
+ * starts automatically the first time and can be restarted with the button below. Direct control use still
+ * ticks the lesson checkpoints, so the lesson works with or without the tutorial.
+ */
 export function NavWidget({ checkpoints, done, onDone, instructions, asset }: WidgetProps & { asset: AssetRef | null }) {
   const frames = useMemo(() => (asset ? assetFrameSource(asset.assetId, asset.frameCount) : null), [asset]);
-  const [step, setStep] = useState(0);
-  const cur = checkpoints[Math.min(step, checkpoints.length - 1)];
-  const hint = HINTS[cur.key];
+  const tour = useTourOptional();
+  const hasFrames = (asset?.frameCount ?? 1) > 1;
+  const finish = () => { for (const c of checkpoints) if (TOUR_COVERS.has(c.key)) onDone(c.key); };
+  usePageTours(["navigation-3d"], { hasFrames }, { "navigation-3d": finish });
 
   const used = (kind: ControlKind, detail?: string) => {
     for (const c of checkpoints) {
-      const h = HINTS[c.key];
+      const h = CONTROL[c.key];
       if (h && h.kind === kind && (!h.detail || h.detail === detail)) onDone(c.key);
     }
   };
@@ -34,17 +40,10 @@ export function NavWidget({ checkpoints, done, onDone, instructions, asset }: Wi
       <p className="mb-2 text-[13px]">{instructions}</p>
       <div className="relative h-[460px]">
         {frames ? <PointCloudViewer frames={frames} onControlUsed={used} title="Practice scene" /> : <p className="text-[13px] text-muted">Demo scene not available.</p>}
-        <div className="pointer-events-none absolute inset-0">
-          <StepDialog
-            title={cur.label}
-            text={hint?.text ?? "Try this control in the viewer."}
-            keys={hint?.keys.map((k) => <Keycap key={k}>{k}</Keycap>)}
-            complete={done.has(cur.key)}
-            step={step}
-            count={checkpoints.length}
-            onStep={setStep}
-          />
-        </div>
+      </div>
+      <div className="mt-2 flex items-start justify-between gap-3">
+        <Checklist checkpoints={checkpoints} done={done} />
+        {tour && frames ? <Button data-testid="start-nav-tour" onClick={() => tour.startTour("navigation-3d", { force: true, context: { hasFrames }, onComplete: finish })}>Start navigation tutorial</Button> : null}
       </div>
     </div>
   );

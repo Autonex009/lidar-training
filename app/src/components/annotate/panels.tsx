@@ -11,7 +11,7 @@ const input = "h-6 w-full rounded border border-line bg-surface px-1 text-[12px]
 
 export function Section({ title, right, children, id }: { title: string; right?: ReactNode; children: ReactNode; id?: string }) {
   return (
-    <section id={id} className="border-b border-line px-3 py-2">
+    <section id={id} data-tour={id} className="border-b border-line px-3 py-2">
       <div className="mb-1.5 flex items-center justify-between"><h3 className="text-[12px] font-semibold">{title}</h3>{right}</div>
       {children}
     </section>
@@ -114,7 +114,7 @@ export function AttributeEditor(p: PanelProps & { cuboid: Cuboid; onFit: () => v
   const editable = !p.readOnly && task.annotationType !== "INSPECTION";
   const cuboidTask = task.annotationType !== "IDENTIFICATION";
   return (
-    <div className="mt-1 space-y-1.5 rounded border border-line bg-panel p-2" data-testid="attribute-editor">
+    <div className="mt-1 space-y-1.5 rounded border border-line bg-panel p-2" data-testid="attribute-editor" data-tour="ws-attributes">
       <label className="flex items-center gap-2 text-[12px]">
         <span className="w-14 shrink-0 text-muted">Label</span>
         <select className={input} value={c.label} disabled={p.readOnly} aria-label="Label" onChange={(e) => p.edit({ type: "patchCuboid", frame: p.frame, id: c.id, patch: { label: e.target.value } })}>

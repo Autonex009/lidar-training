@@ -3,7 +3,7 @@ import type { NormalizedCloud, UpAxis } from "@/lib/pointcloud/types";
 export type ColorMode = "height" | "intensity" | "rgb" | "label" | "flat";
 export type NavigationProfile = "orbit" | "fly";
 export type Preset = "top" | "front" | "side" | "perspective";
-export type ControlKind = "rotate" | "pan" | "zoom" | "move" | "elevate" | "preset" | "reset" | "target";
+export type ControlKind = "rotate" | "pan" | "zoom" | "move" | "elevate" | "preset" | "reset" | "target" | "frame";
 
 export interface CuboidOverlay {
   id: string;

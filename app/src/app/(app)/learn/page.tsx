@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Heartbeat } from "@/components/learn/Heartbeat";
+import { PageTours } from "@/components/tour/PageTours";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <Heartbeat />
+      <PageTours keys={["welcome"]} />
       <PageHeader title="Learn" subtitle={ov ? ov.program.name : "Modules, lessons and knowledge checks."} />
       {notice ? <p role="status" className="mb-4 rounded-md border border-line bg-accent-tint px-3 py-2 text-[13px]">{notice}</p> : null}
       {!ov || ov.modules.length === 0 ? (
@@ -43,7 +45,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
               {ov.learnCompletedAt ? " You have completed Learn: those sections are unlocked." : ""}
             </p>
           </div>
-          <table className="w-full border border-line text-[13px]">
+          <table className="w-full border border-line text-[13px]" data-tour="learn-modules">
             <thead className="bg-panel text-left text-[12px] text-muted">
               <tr>
                 <th className="w-10 border-b border-line px-2 py-1.5 font-medium">#</th>
@@ -56,7 +58,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
             </thead>
             <tbody>
               {ov.modules.map((m, i) => (
-                <tr key={m.id} className={m.locked ? "text-muted" : ""}>
+                <tr key={m.id} className={m.locked ? "text-muted" : ""} data-tour={i === 0 ? "learn-module-first" : undefined}>
                   <td className="border-b border-line px-2 py-2">{i + 1}</td>
                   <td className="border-b border-line px-2 py-2">
                     {m.locked ? <span className="font-medium">{m.title}</span> : <Link href={`/learn/${m.key}`} className="font-medium underline-offset-2 hover:underline">{m.title}</Link>}
@@ -69,7 +71,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
                   <td className="border-b border-line px-2 py-2">{m.locked ? <StatusBadge status="LOCKED" /> : <StatusBadge status={m.status} />}</td>
                 </tr>
               ))}
-              <tr className={ov.final.available ? "" : "text-muted"}>
+              <tr className={ov.final.available ? "" : "text-muted"} data-tour="learn-assessment">
                 <td className="px-2 py-2">★</td>
                 <td className="px-2 py-2">
                   {ov.final.available ? <Link href="/learn/assessment" className="font-medium underline-offset-2 hover:underline">Final assessment</Link> : <span className="font-medium">Final assessment</span>}

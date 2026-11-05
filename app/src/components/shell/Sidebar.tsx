@@ -45,13 +45,13 @@ export function Sidebar({ items }: { items: NavItem[] }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[250px] flex-col border-r border-line bg-surface">
       <div className="flex h-12 items-center border-b border-line px-4 text-sm font-semibold">LiDAR Training</div>
-      <nav className="flex flex-col gap-0.5 p-2" aria-label="Primary">
+      <nav className="flex flex-col gap-0.5 p-2" aria-label="Primary" data-tour="sidebar">
         {items.map((item) => {
           const base = "flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px]";
           if (item.locked) {
             return (
               <Tooltip key={item.href} text={item.lockReason ?? "Locked"}>
-                <span aria-disabled="true" className={`${base} cursor-not-allowed text-muted/70`}>
+                <span aria-disabled="true" data-tour={`sidebar-${item.icon}`} className={`${base} cursor-not-allowed text-muted/70`}>
                   <Icon name={item.icon} />
                   <span className="flex-1">{item.label}</span>
                   <Lock />
@@ -64,6 +64,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
             <Link
               key={item.href}
               href={item.href}
+              data-tour={`sidebar-${item.icon}`}
               className={`${base} ${active ? "bg-accent-tint font-medium text-ink" : "text-ink hover:bg-panel"}`}
               aria-current={active ? "page" : undefined}
             >

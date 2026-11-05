@@ -1,8 +1,9 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { PrismaClient } from "@prisma/client";
 import { chromium, type FullConfig } from "@playwright/test";
-import { ADMIN, REVIEWER, SETUP_TOKEN } from "./helpers/constants";
+import { ADMIN, ALL_TOUR_KEYS, REVIEWER, SETUP_TOKEN } from "./helpers/constants";
 
 const root = path.resolve(__dirname, "..");
 const sh = (cmd: string) => execSync(cmd, { cwd: root, stdio: "inherit", env: process.env });
@@ -29,4 +30,11 @@ export default async function globalSetup(config: FullConfig) {
   const res = await page.request.post("/api/admin/op/user.create", { data: { name: REVIEWER.name, email: REVIEWER.email, role: "REVIEWER", password: REVIEWER.password } });
   if (!res.ok()) throw new Error(`createUser reviewer failed: ${res.status()} ${await res.text()}`);
   await browser.close();
+
+  // Staff accounts: guided tours are tested in 11-tours.spec.ts, so mark them done here to keep other specs unobstructed.
+  const db = new PrismaClient();
+  for (const u of await db.user.findMany({ where: { email: { in: [ADMIN.email, REVIEWER.email] } } })) {
+    for (const tourKey of ALL_TOUR_KEYS) await db.tourProgress.upsert({ where: { userId_tourKey: { userId: u.id, tourKey } }, create: { userId: u.id, tourKey, status: "COMPLETED", completedAt: new Date() }, update: { status: "COMPLETED" } });
+  }
+  await db.$disconnect();
 }

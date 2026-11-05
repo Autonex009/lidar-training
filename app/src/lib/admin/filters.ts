@@ -3,6 +3,7 @@ import type { ActivityType } from "@prisma/client";
 export const ACTIVITY_TYPES: ActivityType[] = [
   "LOGIN", "LOGOUT", "MODULE_OPENED", "LESSON_COMPLETED", "MODULE_COMPLETED", "QUIZ_ATTEMPTED", "ASSESSMENT_ATTEMPTED", "LEARN_COMPLETED",
   "TASK_OPENED", "ANNOTATION_STARTED", "DRAFT_SAVED", "TASK_SUBMITTED", "REVISION_REQUESTED", "REVISION_SUBMITTED", "TASK_APPROVED", "PROGRAM_COMPLETED",
+  "TOUR_STARTED", "TOUR_COMPLETED", "TOUR_SKIPPED",
 ];
 
 export function parseDate(s: string | undefined, endOfDay = false): Date | undefined {

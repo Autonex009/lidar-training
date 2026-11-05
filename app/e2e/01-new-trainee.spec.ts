@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ALICE } from "./helpers/constants";
+import { seedToursDone, userByEmail } from "./helpers/db";
 import { go, login, logout } from "./helpers/ui";
 
 // T1: a new trainee registers; only Learn is available.
@@ -11,6 +12,9 @@ test.describe.serial("T1 new trainee", () => {
     await page.fill('input[name="password"]', ALICE.password);
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/learn/, { timeout: 120_000 });
+    // The welcome tour is covered by 11-tours.spec.ts; mark tours done for this account so the rest of the suite is unobstructed.
+    await seedToursDone((await userByEmail(ALICE.email)).id);
+    await page.reload();
 
     const nav = page.getByRole("navigation", { name: "Primary" });
     await expect(nav.getByRole("link", { name: "Learn" })).toBeVisible();

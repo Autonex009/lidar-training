@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AnnotationDocument } from "@/lib/annotation/types";
+import { emitTourEvent } from "@/lib/tour/events";
 
 export type SaveStatus = "saved" | "dirty" | "saving" | "error";
 
@@ -48,6 +49,7 @@ export function useAutosave(opts: { assignmentId: string; doc: AnnotationDocumen
         }
         const j = (await res.json()) as { savedAt: string };
         savedDoc.current = snapshot;
+        emitTourEvent("draft-saved");
         setSavedAt(j.savedAt);
         setError(null);
         firstDirty.current = null;
