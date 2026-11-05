@@ -109,9 +109,9 @@ export function ReviewWorkspace({ detail, currentUserId }: { detail: ReviewDetai
                 })}
               </tbody>
             </table>
-            {detail.versions.filter((v) => v.feedback).map((v) => <p key={v.versionNumber} className="mt-1 text-[11px] text-muted">v{v.versionNumber}: {v.feedback}</p>)}
+            {detail.versions.filter((v) => v.feedback).map((v) => <p key={v.versionNumber} className="mt-1 text-[12px] text-muted">v{v.versionNumber}: {v.feedback}</p>)}
           </Section>
-          <Section title="Advisory metrics" tour="rv-metrics" right={<span className="text-[11px] text-muted">auto, not a score</span>}>
+          <Section title="Advisory metrics" tour="rv-metrics" right={<span className="text-[12px] text-muted">auto, not a score</span>}>
             {metricRows.length === 0 ? <p className="text-[12px] text-muted">No metrics recorded.</p> : (
               <table className="w-full text-[12px]" data-testid="metrics-table">
                 <tbody>

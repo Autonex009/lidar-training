@@ -33,7 +33,7 @@ export function AssignPanel({ taskId, trainees, reviewers, isPublished }: { task
           {trainees.length === 0 ? <span className="text-muted">No trainees.</span> : trainees.map((t) => (
             <label key={t.id} className="flex items-center gap-2">
               <input type="checkbox" checked={sel.includes(t.id)} onChange={() => setSel((s) => (s.includes(t.id) ? s.filter((x) => x !== t.id) : [...s, t.id]))} />
-              {t.name} <span className="text-muted">{t.email}</span>{t.assigned ? <span className="text-[11px] text-muted">(assigned)</span> : null}
+              {t.name} <span className="text-muted">{t.email}</span>{t.assigned ? <span className="text-[12px] text-muted">(assigned)</span> : null}
             </label>
           ))}
         </div>

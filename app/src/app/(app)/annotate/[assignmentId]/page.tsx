@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireSection } from "@/lib/guard";
 import { getWorkspace, logTaskOpened } from "@/lib/tasks/service";
+import { FullBleed } from "@/components/ui/FullBleed";
 import { AnnotateWorkspace } from "@/components/annotate/AnnotateWorkspace";
 
 export const dynamic = "force-dynamic";
@@ -14,5 +15,5 @@ export default async function WorkspacePage({ params }: { params: Promise<{ assi
     notFound();
   }
   await logTaskOpened(user, assignmentId);
-  return <AnnotateWorkspace key={assignmentId} data={r.data} />;
+  return <FullBleed><AnnotateWorkspace key={assignmentId} data={r.data} /></FullBleed>;
 }

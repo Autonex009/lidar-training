@@ -1,10 +1,9 @@
 "use client";
-
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 import type { LessonBlock, LessonContent } from "@/content";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { UIcon } from "@/components/ui/Icons";
 import { completeLessonAction } from "@/app/(app)/learn/actions";
 import { Figure } from "./figures";
 import { projectImageUrl } from "./Media";
@@ -54,39 +53,39 @@ function Block({ b, programSlug }: { b: Exclude<LessonBlock, { type: "interactiv
     case "explain":
       return (
         <section>
-          {b.heading ? <h2 className="mb-1 text-[15px] font-semibold">{b.heading}</h2> : null}
-          {b.body.map((p, i) => <p key={i} className="mb-1.5 text-[14px] leading-relaxed">{p}</p>)}
+          {b.heading ? <h2 className="mb-1.5 text-[16px] font-semibold text-ink">{b.heading}</h2> : null}
+          {b.body.map((p, i) => <p key={i} className="mb-2 text-[14px] leading-relaxed text-body">{p}</p>)}
         </section>
       );
     case "bullets":
       return (
         <section>
-          <h2 className="mb-1 text-[15px] font-semibold">{b.heading}</h2>
-          <ul className="list-disc space-y-1 pl-5 text-[14px]">{b.items.map((t, i) => <li key={i}>{t}</li>)}</ul>
+          <h2 className="mb-1.5 text-[16px] font-semibold text-ink">{b.heading}</h2>
+          <ul className="list-disc space-y-1.5 pl-5 text-[14px] leading-relaxed text-body marker:text-accent">{b.items.map((t, i) => <li key={i}>{t}</li>)}</ul>
         </section>
       );
     case "remember":
       return (
-        <section className="border-l-4 border-accent bg-accent-tint px-3 py-2">
-          <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-wide">Remember</h2>
+        <section className="rounded-xl border border-accent/20 bg-accent-tint px-4 py-3">
+          <h2 className="mb-1.5 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-accent"><UIcon name="info" size={14} />Remember</h2>
           <ul className="list-disc space-y-1 pl-5 text-[14px]">{b.items.map((t, i) => <li key={i}>{t}</li>)}</ul>
         </section>
       );
     case "mistakes":
       return (
-        <section className="border-l-4 border-[#e5484d] bg-[#fdf2f2] px-3 py-2">
-          <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-wide">Common mistakes</h2>
+        <section className="rounded-xl border border-danger/25 bg-danger/10 px-4 py-3">
+          <h2 className="mb-1.5 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-danger-ink"><UIcon name="flag" size={14} />Common mistakes</h2>
           <ul className="list-disc space-y-1 pl-5 text-[14px]">{b.items.map((t, i) => <li key={i}>{t}</li>)}</ul>
         </section>
       );
     case "example":
       return (
-        <section className="border border-line bg-panel px-3 py-2">
-          <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-wide text-muted">{b.heading}</h2>
+        <section className="rounded-xl border border-line bg-panel px-4 py-3">
+          <h2 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-muted">{b.heading}</h2>
           {b.body.map((p, i) => <p key={i} className="mb-1.5 text-[14px]">{p}</p>)}
           {b.imageFile ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={projectImageUrl(programSlug, b.imageFile)} alt={b.heading} className="mt-1 max-h-72 w-auto border border-line" />
+            <img src={projectImageUrl(programSlug, b.imageFile)} alt={b.heading} className="mt-1 max-h-72 w-auto rounded-lg border border-line" />
           ) : null}
         </section>
       );
@@ -94,7 +93,7 @@ function Block({ b, programSlug }: { b: Exclude<LessonBlock, { type: "interactiv
       return (
         <figure>
           <Figure id={b.id} />
-          <figcaption className="mt-1 text-[12px] text-muted">{b.caption}</figcaption>
+          <figcaption className="mt-1.5 text-[12px] text-muted">{b.caption}</figcaption>
         </figure>
       );
   }
@@ -158,23 +157,24 @@ export function LessonView(p: LessonViewProps) {
   const pct = allKeys.length ? Math.round((doneCount / allKeys.length) * 100) : 100;
   return (
     <div>
-      <div className="mb-4 border border-line" data-testid="lesson-strip">
-        <div className="flex flex-wrap items-center gap-x-2 px-3 py-1.5 text-[13px]">
-          <span className="font-medium">Lesson {p.lessonIndex + 1} of {p.lessonCount}</span>
+      <div className="mb-5 overflow-hidden rounded-xl border border-line bg-surface" data-testid="lesson-strip">
+        <div className="flex flex-wrap items-center gap-x-2 px-5 py-3 text-[14px]">
+          <span className="font-semibold text-ink">Lesson {p.lessonIndex + 1} of {p.lessonCount}</span>
           <span className="text-muted">· {p.content.estimatedMinutes} min</span>
           {allKeys.length ? <span className="text-muted">· <span data-testid="strip-checkpoints">{doneCount}/{allKeys.length} checkpoints</span></span> : null}
-          {completed ? <span className="ml-auto text-success">Complete</span> : null}
+          {completed ? <span className="ml-auto inline-flex items-center gap-1 font-medium text-success-ink"><UIcon name="check" size={14} />Complete</span> : null}
         </div>
-        <div className="h-1 bg-line" aria-hidden><div className="h-1 bg-accent" style={{ width: `${completed ? 100 : pct}%` }} /></div>
+        <div className="h-1.5 bg-line" aria-hidden><div className="h-1.5 grad-bar" style={{ width: `${completed ? 100 : pct}%` }} /></div>
       </div>
-      <div className="space-y-4">
+      <div className="rounded-xl border border-line bg-surface p-6 shadow-float">
+      <div className="space-y-5">
         {p.content.blocks.map((b, i) => (
           <div key={i}>
             {b.type === "interactive" ? (
-              <section className="grid gap-3 border border-line p-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <section className="grid gap-4 rounded-xl border border-line p-4 lg:grid-cols-[minmax(0,1fr)_240px]">
                 <div className="min-w-0">{renderWidget(b)}</div>
-                <aside aria-label="Checkpoints" data-testid="checkpoints" className="self-start border border-line bg-panel p-2.5 lg:sticky lg:top-3">
-                  <h3 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-muted">Checkpoints {b.checkpoints.filter((c) => completed || done.has(c.key)).length}/{b.checkpoints.length}</h3>
+                <aside aria-label="Checkpoints" data-testid="checkpoints" className="self-start rounded-xl border border-line bg-panel p-3 lg:sticky lg:top-3">
+                  <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-muted">Checkpoints {b.checkpoints.filter((c) => completed || done.has(c.key)).length}/{b.checkpoints.length}</h3>
                   <Checklist checkpoints={b.checkpoints} done={completed ? new Set(allKeys) : done} />
                 </aside>
               </section>
@@ -182,24 +182,25 @@ export function LessonView(p: LessonViewProps) {
           </div>
         ))}
       </div>
-      {error ? <p role="alert" className="mt-3 text-[13px] text-[#c53030]">{error}</p> : null}
-      <div className="mt-6 grid grid-cols-[auto_1fr_auto] items-start gap-3 border-t border-line pt-3">
-        {p.backHref ? <Link href={p.backHref} className="inline-flex h-8 items-center rounded-md border border-line px-3 text-[13px] font-medium hover:bg-panel">Back</Link> : <span />}
+      </div>
+      {error ? <p role="alert" className="mt-3 text-[14px] text-danger-ink">{error}</p> : null}
+      <div className="mt-5 grid grid-cols-[auto_1fr_auto] items-start gap-3 rounded-xl border border-line bg-surface p-4">
+        {p.backHref ? <ButtonLink href={p.backHref} className="h-10 px-4 text-[14px]">Back</ButtonLink> : <span />}
         <div className="flex flex-col items-center gap-1 text-center">
           {completed ? (
-            <span className="inline-flex h-8 items-center gap-1.5 text-[13px] text-success">Lesson complete</span>
+            <span className="inline-flex h-10 items-center gap-1.5 text-[14px] font-medium text-success-ink"><UIcon name="check" size={16} />Lesson complete</span>
           ) : (
-            <Button variant={allCheckpointsDone ? "primary" : "secondary"} data-testid="mark-complete" disabled={!allCheckpointsDone || pending} onClick={markComplete}>{pending ? "Saving…" : "Mark lesson complete"}</Button>
+            <Button variant={allCheckpointsDone ? "primary" : "secondary"} size="lg" data-testid="mark-complete" disabled={!allCheckpointsDone || pending} onClick={markComplete}>{pending ? "Saving…" : "Mark lesson complete"}</Button>
           )}
           {!completed && !allCheckpointsDone ? <span className="text-[12px] text-muted">Finish the interactive checkpoints to continue.</span> : null}
           <span className="text-[12px] text-muted" data-testid="whats-next">What&apos;s next: {p.nextPreview}</span>
         </div>
-        <Link href={p.nextHref} className="inline-flex h-8 items-center rounded-md border border-line px-3 text-[13px] font-medium hover:bg-panel">{p.nextLabel}</Link>
+        <ButtonLink href={p.nextHref} className="h-10 px-4 text-[14px]">{p.nextLabel}<UIcon name="arrow" size={14} /></ButtonLink>
       </div>
       {p.quizHref && completed && p.otherLessonsDone ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-accent bg-accent-tint px-3 py-2.5" data-testid="quiz-cta">
-          <span className="text-[13.5px]">All lessons in this module are complete. Show what you learned.</span>
-          <Link href={p.quizHref} className="inline-flex h-8 items-center rounded-md border border-accent bg-accent px-3 text-[13px] font-medium hover:brightness-95">Take the knowledge check</Link>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent/30 bg-accent-tint px-5 py-4" data-testid="quiz-cta">
+          <span className="text-[14px] text-ink">All lessons in this module are complete. Show what you learned.</span>
+          <ButtonLink href={p.quizHref} variant="primary" size="lg">Take the knowledge check</ButtonLink>
         </div>
       ) : null}
     </div>

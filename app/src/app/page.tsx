@@ -87,7 +87,7 @@ export default async function Home() {
                   <li key={s.n} className="flex items-center gap-3.5">
                     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${i === 0 ? "bg-accent text-white" : "bg-accent-tint text-accent"}`}><Icon name={s.icon} /></span>
                     <span className="min-w-0">
-                      <span className="block text-[11px] font-bold tracking-[0.08em] text-muted">{s.n}/04</span>
+                      <span className="block text-[12px] font-bold tracking-[0.08em] text-muted">{s.n}/04</span>
                       <span className="block text-[15px] font-bold leading-tight text-ink">{s.title}</span>
                     </span>
                   </li>

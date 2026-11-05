@@ -26,7 +26,7 @@ export interface ModuleRow {
 }
 
 export interface LearnOverview {
-  program: { id: string; slug: string; name: string; passingScore: number };
+  program: { id: string; slug: string; name: string; description: string; passingScore: number };
   modules: ModuleRow[];
   mandatoryTotal: number;
   mandatoryDone: number;
@@ -77,7 +77,7 @@ export async function getLearnOverview(userId: string, role: Role): Promise<Lear
   const mandatoryDone = mandatory.filter((m) => m.status === "COMPLETED").length;
   const allDone = allMandatoryComplete(mods, completed);
   return {
-    program: { id: program.id, slug: program.slug, name: program.name, passingScore: program.passingScore },
+    program: { id: program.id, slug: program.slug, name: program.name, description: program.description, passingScore: program.passingScore },
     modules, mandatoryTotal: mandatory.length, mandatoryDone, allMandatoryDone: allDone,
     final: {
       available: (allDone || isStaff(role)) && finalCount > 0,
@@ -87,6 +87,28 @@ export async function getLearnOverview(userId: string, role: Role): Promise<Lear
     },
     learnCompletedAt: enrollment.learnCompletedAt,
   };
+}
+
+export interface ContinueTarget { href: string; label: string; kind: "lesson" | "quiz" | "assessment" | "annotate" }
+
+/** Where "Continue" should take the learner: first unfinished lesson / quiz of the first open mandatory module, then the assessment, then Annotate. */
+export async function getContinueTarget(userId: string, ov: LearnOverview): Promise<ContinueTarget> {
+  const open = ov.modules.find((m) => m.isMandatory && !m.locked && m.status !== "COMPLETED");
+  if (open) {
+    const lessons = await db.lesson.findMany({ where: { moduleId: open.id }, orderBy: { order: "asc" }, select: { id: true, title: true } });
+    const done = new Set((await db.lessonProgress.findMany({ where: { userId, completedAt: { not: null }, lessonId: { in: lessons.map((l) => l.id) } }, select: { lessonId: true } })).map((p) => p.lessonId));
+    const idx = lessons.findIndex((l) => !done.has(l.id));
+    if (idx >= 0) return { href: `/learn/${open.key}?l=${idx}`, label: lessons[idx].title, kind: "lesson" };
+    return { href: `/learn/${open.key}/quiz`, label: `${open.title}: knowledge check`, kind: "quiz" };
+  }
+  if (!ov.final.passed && ov.final.available) return { href: "/learn/assessment", label: "Final assessment", kind: "assessment" };
+  return { href: "/annotate", label: "Annotate", kind: "annotate" };
+}
+
+/** Total time on Learn (sum of heartbeat sessions), in seconds. */
+export async function getLearningSeconds(userId: string): Promise<number> {
+  const r = await db.learningSession.aggregate({ where: { userId }, _sum: { seconds: true } });
+  return r._sum.seconds ?? 0;
 }
 
 /** Module (by key) in the user's program, with a lock check. Returns null when missing; `locked` true when sequentially locked. */

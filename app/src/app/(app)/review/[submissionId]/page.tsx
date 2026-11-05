@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { getReviewDetail } from "@/lib/review/service";
+import { FullBleed } from "@/components/ui/FullBleed";
 import { ReviewWorkspace } from "@/components/review/ReviewWorkspace";
 
 export const dynamic = "force-dynamic";
@@ -12,5 +13,5 @@ export default async function ReviewSubmissionPage({ params, searchParams }: { p
   const vn = v && /^\d+$/.test(v) ? Number(v) : undefined;
   const r = await getReviewDetail(user, submissionId, vn);
   if (!r.ok) notFound();
-  return <ReviewWorkspace key={submissionId + (vn ?? "")} detail={r.data} currentUserId={user.id} />;
+  return <FullBleed><ReviewWorkspace key={submissionId + (vn ?? "")} detail={r.data} currentUserId={user.id} /></FullBleed>;
 }

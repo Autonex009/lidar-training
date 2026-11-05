@@ -79,10 +79,10 @@ export function NotificationsBell({ initialUnread }: { initialUnread: number }) 
   return (
     <div className="relative" ref={box} data-tour="topbar-bell">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open} data-testid="notifications-button"
-        className="relative flex h-8 w-8 items-center justify-center rounded-md border border-line hover:bg-panel" aria-label={`Notifications (${unread} unread)`}>
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-line hover:bg-panel" aria-label={`Notifications (${unread} unread)`}>
         <Bell />
         {unread > 0 ? (
-          <span data-testid="notifications-unread" className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] text-surface">{unread}</span>
+          <span data-testid="notifications-unread" className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[12px] text-white">{unread}</span>
         ) : null}
       </button>
       {open && (
@@ -100,7 +100,7 @@ export function NotificationsBell({ initialUnread }: { initialUnread: number }) 
                   <span className="min-w-0 flex-1">
                     <span className={`block truncate ${n.read ? "" : "font-medium"}`}>{n.title}</span>
                     {n.body ? <span className="block text-[12px] text-muted line-clamp-2">{n.body}</span> : null}
-                    <span className="block text-[11px] text-muted">{relativeTime(n.createdAt)}</span>
+                    <span className="block text-[12px] text-muted">{relativeTime(n.createdAt)}</span>
                   </span>
                 </button>
               </li>

@@ -20,9 +20,9 @@ export default async function ModuleQuizPage({ params }: { params: Promise<{ mod
   return (
     <>
       <Heartbeat moduleId={row.id} />
-      <div className="mb-1 text-[12px] text-muted"><Link href="/learn" className="underline">Learn</Link> / <Link href={`/learn/${row.key}`} className="underline">{row.title}</Link> / Quiz</div>
+      <nav aria-label="Breadcrumb" className="mb-2 flex items-center gap-1.5 text-[13px] text-muted"><Link href="/learn" className="hover:text-ink hover:underline">Learn</Link><span aria-hidden>/</span><Link href={`/learn/${row.key}`} className="hover:text-ink hover:underline">{row.title}</Link><span aria-hidden>/</span><span>Quiz</span></nav>
       <PageHeader title={`${row.title}: knowledge check`} subtitle={`Pass mark ${overview.program.passingScore}%. You can retry as often as you need.${row.lessonsDone < row.lessonsTotal ? " Complete all lessons too: the module counts as complete only when both are done." : ""}`} />
-      <div className="max-w-[860px]">
+      <div className="max-w-[880px]">
         <QuizForm questions={questions} moduleId={row.id} programSlug={overview.program.slug} backHref={`/learn/${row.key}`} nextHref="/learn" nextLabel="Back to modules" />
       </div>
     </>

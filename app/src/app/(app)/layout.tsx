@@ -31,10 +31,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <TourProvider role={user.role}>
       <div className="min-h-screen">
-        <Sidebar items={items} />
-        <div className="pl-[250px]">
+        <Sidebar items={items} name={user.name} role={user.role} />
+        <div className="dot-grid min-h-screen pl-[250px]">
           <Topbar name={user.name} email={user.email} role={user.role} progress={progress} unread={unread} />
-          <main className="p-6">{children}</main>
+          <main className="mx-auto max-w-[1200px] px-8 py-8 has-[>[data-full-bleed]]:max-w-none has-[>[data-full-bleed]]:p-6">{children}</main>
         </div>
       </div>
       <TourOverlay />

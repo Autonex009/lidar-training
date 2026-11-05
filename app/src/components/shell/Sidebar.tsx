@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { Wordmark } from "@/components/Brand";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { UIcon, type IconName } from "@/components/ui/Icons";
 
 export interface NavItem {
   href: string;
@@ -15,46 +16,34 @@ export interface NavItem {
   badge?: number;
 }
 
-const ICONS: Record<NavItem["icon"], ReactNode> = {
-  learn: <path d="M3 5.5 12 3l9 2.5v13L12 21l-9-2.5v-13ZM12 3v18" />,
-  annotate: <path d="M4 20h4L19 9l-4-4L4 16v4ZM13 7l4 4" />,
-  review: <path d="M4 5h16v11H9l-5 4V5ZM8 9h8M8 12h5" />,
-  complete: <path d="m5 12 4.5 4.5L19 7" />,
-  admin: <path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6l-8-3Z" />,
-};
+const ICON: Record<NavItem["icon"], IconName> = { learn: "learn", annotate: "annotate", review: "review", complete: "complete", admin: "admin" };
 
-function Icon({ name }: { name: NavItem["icon"] }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      {ICONS[name]}
-    </svg>
-  );
+/** Opens the existing Help menu (the "?" in the top bar) so there is one source of truth for tutorials. */
+function openHelp() {
+  document.querySelector<HTMLButtonElement>('[data-testid="help-button"]')?.click();
 }
 
-function Lock() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Locked">
-      <rect x="5" y="11" width="14" height="9" rx="1.5" />
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-    </svg>
-  );
-}
-
-export function Sidebar({ items }: { items: NavItem[] }) {
+export function Sidebar({ items, name, role }: { items: NavItem[]; name: string; role: string }) {
   const pathname = usePathname();
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join("") || "?";
+  const staged = items.filter((i) => i.icon !== "admin");
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[250px] flex-col border-r border-line bg-surface">
-      <div className="flex h-12 items-center border-b border-line px-4 text-sm font-semibold">LiDAR Academy</div>
-      <nav className="flex flex-col gap-0.5 p-2" aria-label="Primary" data-tour="sidebar">
+      <div className="flex h-14 items-center border-b border-line px-4 text-[15px]"><Wordmark /></div>
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Primary" data-tour="sidebar">
+        <p className="px-2.5 pb-1 pt-2 text-[12px] font-semibold uppercase tracking-wide text-muted">Training</p>
         {items.map((item) => {
-          const base = "relative flex h-9 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[13px]";
+          const step = staged.indexOf(item);
+          const base = "relative flex h-10 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[14px]";
+          const num = step >= 0 ? <span aria-hidden className="w-5 shrink-0 text-[12px] font-semibold tabular-nums text-muted">{String(step + 1).padStart(2, "0")}</span> : <span className="w-5 shrink-0" />;
           if (item.locked) {
             return (
               <Tooltip key={item.href} text={item.lockReason ?? "Locked"}>
                 <span aria-disabled="true" data-tour={`sidebar-${item.icon}`} className={`${base} cursor-not-allowed text-muted/70`}>
-                  <Icon name={item.icon} />
+                  {num}
+                  <UIcon name={ICON[item.icon]} size={17} />
                   <span className="flex-1">{item.label}</span>
-                  <Lock />
+                  <UIcon name="lock" size={14} label="Locked" />
                 </span>
               </Tooltip>
             );
@@ -65,16 +54,31 @@ export function Sidebar({ items }: { items: NavItem[] }) {
               key={item.href}
               href={item.href}
               data-tour={`sidebar-${item.icon}`}
-              className={`${base} ${active ? "bg-accent-tint font-medium text-accent before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-accent" : "text-ink hover:bg-panel"}`}
+              className={`${base} ${active ? "bg-accent-tint font-semibold text-accent before:absolute before:bottom-2 before:left-0 before:top-2 before:w-[3px] before:rounded-full before:bg-accent" : "text-ink hover:bg-panel"}`}
               aria-current={active ? "page" : undefined}
             >
-              <Icon name={item.icon} />
+              {num}
+              <UIcon name={ICON[item.icon]} size={17} />
               <span className="flex-1">{item.label}</span>
-              {item.badge ? <span data-testid={`nav-badge-${item.label}`} className="rounded-full bg-ink px-1.5 text-[10px] leading-4 text-surface">{item.badge}</span> : null}
+              {item.badge ? <span data-testid={`nav-badge-${item.label}`} className="min-w-5 rounded-full bg-accent px-1.5 text-center text-[12px] leading-5 text-white">{item.badge}</span> : null}
             </Link>
           );
         })}
       </nav>
+      <div className="space-y-2 border-t border-line p-3">
+        <button type="button" onClick={openHelp} className="flex h-10 w-full items-center gap-2.5 rounded-[10px] px-2.5 text-[14px] text-ink hover:bg-panel">
+          <span className="w-5 shrink-0" />
+          <UIcon name="help" size={17} />
+          Help &amp; tutorials
+        </button>
+        <div className="flex items-center gap-2.5 rounded-xl bg-panel p-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-white" aria-hidden>{initials}</span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] font-medium text-ink">{name}</p>
+            <span className="mt-0.5 inline-flex rounded-full border border-accent/25 bg-accent-tint px-2 text-[12px] font-medium capitalize text-accent">{role.toLowerCase()}</span>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }

@@ -20,11 +20,11 @@ export function ProfileMenu({ name, email, role }: { name: string; email: string
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-8 items-center gap-2 rounded-md border border-line px-2.5 text-[13px] hover:bg-panel"
+        className="flex h-9 items-center gap-2 rounded-full border border-line py-0 pl-1.5 pr-3.5 text-[13px] hover:bg-panel"
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white text-[11px] font-semibold">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-white text-[12px] font-semibold">
           {name.charAt(0).toUpperCase()}
         </span>
         {name}

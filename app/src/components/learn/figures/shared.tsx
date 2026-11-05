@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export const C = { ink: "#111", mute: "#9ca3af", line: "#d1d5db", red: "#e5484d", green: "#4caf50", blue: "#3b82f6", acc: "#c6f135", fill: "#f5f5f5" };
+export const C = { ink: "#111", mute: "#9ca3af", line: "#d1d5db", red: "#e5484d", green: "var(--success)", blue: "var(--grad-from)", acc: "var(--accent)", fill: "#f5f5f5" };
 
 /** Common frame for all line-diagram figures. */
 export function Fig({ children, label, h = 180 }: { children: ReactNode; label: string; h?: number }) {

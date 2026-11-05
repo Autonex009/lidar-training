@@ -22,7 +22,7 @@ export const STATUS_META: Record<Status, { label: string; className: string }> =
 export function StatusBadge({ status }: { status: Status }) {
   const m = STATUS_META[status];
   return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${m.className}`}>
+    <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[12px] font-medium ${m.className}`}>
       {m.label}
     </span>
   );

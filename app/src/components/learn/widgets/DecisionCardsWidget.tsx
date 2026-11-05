@@ -67,7 +67,7 @@ export function DecisionCardsWidget({ onDone, instructions, config }: WidgetProp
               {order.map((i) => {
                 const ch = card.choices[i];
                 const isPicked = picked === i, isRight = i === card.correct;
-                const state = picked === null ? "" : isRight ? "border-success bg-[#f1f9f1]" : isPicked ? "border-[#e5484d] bg-[#fdf2f2]" : "opacity-60";
+                const state = picked === null ? "" : isRight ? "border-success bg-success/10" : isPicked ? "border-danger bg-danger/10" : "opacity-60";
                 return (
                   <button key={i} type="button" disabled={picked !== null} data-testid={`choice-${i}`} data-correct={isRight ? "true" : "false"} onClick={() => choose(i)}
                     className={`rounded-md border border-line px-3 py-2 text-left text-[13.5px] enabled:hover:bg-panel ${state}`}>

@@ -88,29 +88,37 @@ export default async function ModulePage({ params, searchParams }: { params: Pro
   return (
     <>
       <Heartbeat moduleId={row.id} />
-      <div className="mb-1 text-[12px] text-muted"><Link href="/learn" className="underline">Learn</Link> / {row.title}</div>
-      <PageHeader title={lesson.title} />
-      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <nav aria-label="Lessons" className="self-start border border-line text-[13px]">
-          <div className="border-b border-line bg-panel px-3 py-2 font-medium">{row.title}</div>
-          <ul>
-            {lessons.map((l, i) => (
-              <li key={l.id} className="border-b border-line last:border-b-0">
-                <Link href={`${base}?l=${i}`} className={`flex items-center gap-2 px-3 py-2 hover:bg-panel ${i === index ? "bg-accent-tint font-medium" : ""}`}>
-                  <Check on={doneIds.has(l.id)} /><span>{l.title}</span>
-                </Link>
-              </li>
-            ))}
+      <nav aria-label="Breadcrumb" className="mb-2 flex items-center gap-1.5 text-[13px] text-muted"><Link href="/learn" className="hover:text-ink hover:underline">Learn</Link><span aria-hidden>/</span><span>{row.title}</span></nav>
+      <PageHeader title={lesson.title} subtitle={`Lesson ${index + 1} of ${lessons.length} · ${row.title}`} />
+      <div className="grid gap-6 lg:grid-cols-[272px_minmax(0,1fr)]">
+        <nav aria-label="Lessons" className="self-start rounded-xl border border-line bg-surface p-4 text-[14px] lg:sticky lg:top-20">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <span className="font-semibold text-ink">{row.title}</span>
+          </div>
+          <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-line" aria-hidden><div className="h-full grad-bar" style={{ width: `${Math.round(((doneIds.size + (row.quizPassed ? 1 : 0)) / (lessons.length + (row.quizCount > 0 ? 1 : 0))) * 100)}%` }} /></div>
+          <ol>
+            {lessons.map((l, i) => {
+              const done = doneIds.has(l.id);
+              const cur = i === index;
+              return (
+                <li key={l.id} className="relative">
+                  {i < lessons.length - 1 || row.quizCount > 0 ? <span aria-hidden className={`absolute left-[13px] top-9 bottom-0 w-0.5 ${done ? "bg-accent" : "bg-line"}`} /> : null}
+                  <Link href={`${base}?l=${i}`} className={`relative flex items-start gap-3 rounded-[10px] px-1.5 py-2 hover:bg-panel ${cur ? "bg-accent-tint font-medium text-ink" : "text-body"}`} aria-current={cur ? "step" : undefined}>
+                    <Check on={done} n={i + 1} current={cur} /><span className="pt-0.5 leading-5">{l.title}</span>
+                  </Link>
+                </li>
+              );
+            })}
             {row.quizCount > 0 ? (
               <li>
-                <Link href={`${base}/quiz`} className="flex items-center gap-2 px-3 py-2 hover:bg-panel">
-                  <Check on={row.quizPassed} /><span>Module quiz</span>
+                <Link href={`${base}/quiz`} className="flex items-start gap-3 rounded-[10px] px-1.5 py-2 text-body hover:bg-panel">
+                  <Check on={row.quizPassed} icon="quiz" /><span className="pt-0.5 leading-5">Module quiz</span>
                 </Link>
               </li>
             ) : null}
-          </ul>
+          </ol>
         </nav>
-        <main className="max-w-[1040px]">
+        <main className="min-w-0">
           <LessonView
             key={lesson.id}
             lessonId={lesson.id}

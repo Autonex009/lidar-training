@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Vector3 } from "three";
+import { VIEWER_COLORS } from "@/components/viewer/palette";
 import { PointCloudViewer, assetFrameSource, type CuboidOverlay, type ViewerApi } from "@/components/viewer";
 import { iou3d, type Box } from "@/lib/geometry/cuboid";
 import type { AssetRef, WidgetProps } from "./types";
@@ -57,8 +58,8 @@ export function CuboidWidget({ onDone, instructions, asset, reference }: WidgetP
   }, [ref, dist, resized, yawErr, iou]);
 
   const overlays = useMemo<CuboidOverlay[]>(() => {
-    const o: CuboidOverlay[] = [{ id: "edit", label: "Your box", center: box.center, dims: box.dims, yaw: box.yaw, color: "#c6f135" }];
-    if (showRef && ref) o.push({ id: "ref", label: "Reference", center: ref.center, dims: ref.dims, yaw: ref.yaw, color: "#9ca3af" });
+    const o: CuboidOverlay[] = [{ id: "edit", label: "Your box", center: box.center, dims: box.dims, yaw: box.yaw, color: VIEWER_COLORS.edit }];
+    if (showRef && ref) o.push({ id: "ref", label: "Reference", center: ref.center, dims: ref.dims, yaw: ref.yaw, color: VIEWER_COLORS.ref });
     return o;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s, showRef, ref]);
@@ -68,7 +69,7 @@ export function CuboidWidget({ onDone, instructions, asset, reference }: WidgetP
     <div>
       <p className="mb-2 text-[13px]">{instructions}</p>
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="h-[420px]"><PointCloudViewer ref={api} frames={frames} overlays={overlays} onFrameChange={() => setTimeout(focus, 50)} title="Fit the lime box to the car" /></div>
+        <div className="h-[420px]"><PointCloudViewer ref={api} frames={frames} overlays={overlays} onFrameChange={() => setTimeout(focus, 50)} title="Fit the blue box to the car" /></div>
         <div className="min-w-0 space-y-1.5 border border-line p-2">
           <div className="text-[12px] font-medium">Box controls</div>
           <Slider label="Center X" value={s.x} min={ref.center[0] - 8} max={ref.center[0] + 8} step={0.05} onChange={set("x")} />

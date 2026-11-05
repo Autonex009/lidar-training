@@ -70,16 +70,16 @@ function IntroPreview({ kind }: { kind: "viewer" | "none" }) {
   }
   const chip = (keys: string[], label: string) => (
     <span className="flex items-center gap-1 whitespace-nowrap">
-      {keys.map((k) => <kbd key={k} className="rounded border border-[#555] px-1 text-[10px] font-sans leading-4">{k}</kbd>)}
+      {keys.map((k) => <kbd key={k} className="rounded border border-[#555] px-1 text-[12px] font-sans leading-4">{k}</kbd>)}
       <span>{label}</span>
     </span>
   );
   return (
     <div className="m-3 mb-0 overflow-hidden rounded-xl bg-panel" aria-hidden data-testid="tour-preview">
-      <div className="py-1.5 pl-3 pr-12 text-right text-[11px] text-muted">3D Scene</div>
+      <div className="py-1.5 pl-3 pr-12 text-right text-[12px] text-muted">3D Scene</div>
       <div className="relative h-[190px] bg-[#111]">
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 190" preserveAspectRatio="xMidYMid slice">{dots}</svg>
-        <div className="absolute inset-x-2 top-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-black/70 px-2 py-1 text-[11px] text-white">
+        <div className="absolute inset-x-2 top-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-black/70 px-2 py-1 text-[12px] text-white">
           {chip(["W", "A", "S", "D"], "Move")}{chip(["⌘"], "Center camera")}{chip(["Q", "E"], "Elevate")}{chip(["⇧"], "Go faster")}
         </div>
       </div>

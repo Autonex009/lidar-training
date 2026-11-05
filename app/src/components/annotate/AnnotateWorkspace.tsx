@@ -439,7 +439,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
       {toolsOff && <div className="border-b border-line bg-warning/10 px-3 py-1.5 text-[12px] text-warning-ink">Annotation tools support Z-up assets only; this asset is Y-up.</div>}
       <div className="relative flex min-h-0 flex-1">
         <aside className="flex w-[300px] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface" aria-label="Labels panel">
-          <Section title="Labels" right={<span className="text-[11px] text-muted">{allCuboids(doc).length ? `${cubs.length} in frame` : ""}</span>}>
+          <Section title="Labels" right={<span className="text-[12px] text-muted">{allCuboids(doc).length ? `${cubs.length} in frame` : ""}</span>}>
             {isSeg ? (
               <div className="space-y-1.5">
                 <div className="flex flex-wrap gap-1" data-tour="ws-palette">
@@ -458,13 +458,13 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
                     <button type="button" className="h-6 rounded border border-line px-2 hover:bg-panel" disabled={readOnly} onClick={() => setInstance((n) => n + 1)}>New instance</button>
                     <button type="button" className="h-6 rounded border border-line px-2 hover:bg-panel" disabled={readOnly || instance < 2} onClick={() => setInstance((n) => Math.max(1, n - 1))}>Prev</button></div>
                 )}
-                <p className="text-[11px] text-muted">{labeledCount.toLocaleString()} points labelled. Hide a class to reveal unlabelled points.</p>
+                <p className="text-[12px] text-muted">{labeledCount.toLocaleString()} points labelled. Hide a class to reveal unlabelled points.</p>
                 <div className="flex flex-wrap gap-2 text-[12px]" data-tour="ws-hide">
                   {task.classes.map((c) => (
                     <label key={c.name} className="flex items-center gap-1"><input type="checkbox" checked={!hidden.has(c.classId)} onChange={() => { emitTourEvent("hide-label", c.name); setHidden((h) => { const n = new Set(h); if (n.has(c.classId)) n.delete(c.classId); else n.add(c.classId); return n; }); }} />{c.name}</label>
                   ))}
                 </div>
-                <p className="text-[11px] text-muted">Lasso selects everything under the outline regardless of depth: rotate to a side view first.</p>
+                <p className="text-[12px] text-muted">Lasso selects everything under the outline regardless of depth: rotate to a side view first.</p>
               </div>
             ) : (
               <>
@@ -485,7 +485,7 @@ export function AnnotateWorkspace({ data }: { data: WorkspaceData }) {
             {type === "INSPECTION" && <div data-tour="ws-checkpoints"><CheckpointsPanel task={task} doc={doc} /></div>}
           </Section>
           {dupFrames && (
-            <Section id="ws-tracking" title="Tracking" right={<span className="text-[11px] text-muted">Frame {frame + 1}/{task.asset.frameCount}</span>}>
+            <Section id="ws-tracking" title="Tracking" right={<span className="text-[12px] text-muted">Frame {frame + 1}/{task.asset.frameCount}</span>}>
               <div className="mb-1.5 flex flex-wrap gap-1">
                 <button type="button" data-tour="ws-copy-prev" className="h-6 rounded border border-line px-2 text-[12px] hover:bg-panel disabled:opacity-50" disabled={readOnly || frame < 1} onClick={copyPrev}>Copy boxes from previous frame</button>
                 <button type="button" className="h-6 rounded border border-line px-2 text-[12px] hover:bg-panel disabled:opacity-50" disabled={readOnly || !selected} onClick={interpolate}>Interpolate to next keyframe</button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { VIEWER_COLORS } from "@/components/viewer/palette";
 import { useMemo, useRef, useState } from "react";
 import { PointCloudViewer, assetFrameSource, type CuboidOverlay, type ViewerApi } from "@/components/viewer";
 import type { FindConfig } from "@/content";
@@ -66,7 +67,7 @@ export function FindObjectWidget({ onDone, instructions, asset, refs, config }: 
       const p = config.prompts.find((x) => x.id === id);
       if (!p) continue;
       const r = resolveFindTarget(p.target, refs);
-      if (r.kind === "object") r.boxes.forEach((b, i) => out.push({ id: `${id}-${i}`, center: b.center, dims: b.dims, yaw: b.yaw, color: "#4caf50", selectable: false }));
+      if (r.kind === "object") r.boxes.forEach((b, i) => out.push({ id: `${id}-${i}`, center: b.center, dims: b.dims, yaw: b.yaw, color: VIEWER_COLORS.ok, selectable: false }));
     }
     return out;
   }, [solved, config.prompts, refs]);

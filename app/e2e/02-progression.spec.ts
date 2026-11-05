@@ -29,16 +29,16 @@ test.describe.serial("T2 progression persists", () => {
     await expect(page.getByRole("status")).toContainText("Passed");
 
     await go(page, "/learn");
-    const row = page.locator("tr", { hasText: mod.title });
+    const row = page.getByTestId(`module-card-${mod.key}`);
     await expect(row).toContainText(`1/${mod.lessons.length}`);
-    await expect(row).toContainText("Passed");
+    await expect(row).toContainText("Quiz 100%");
 
     await logout(page);
     await login(page, ALICE.email, ALICE.password);
     await go(page, "/learn");
-    const row2 = page.locator("tr", { hasText: mod.title });
+    const row2 = page.getByTestId(`module-card-${mod.key}`);
     await expect(row2).toContainText(`1/${mod.lessons.length}`);
-    await expect(row2).toContainText("Passed");
+    await expect(row2).toContainText("Quiz 100%");
     await go(page, `/learn/${mod.key}?l=0`);
     await expect(page.getByText("Lesson complete")).toBeVisible();
     // gate still locked: only part of Learn is done

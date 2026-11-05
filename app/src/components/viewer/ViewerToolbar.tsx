@@ -39,7 +39,7 @@ export function ToolButton({ label, active, onClick, disabled, children, dataTou
       >
         {children}
       </button>
-      <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded border border-line bg-surface px-1.5 py-0.5 text-[11px] text-ink group-hover:block">{label}</span>
+      <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded border border-line bg-surface px-1.5 py-0.5 text-[12px] text-ink group-hover:block">{label}</span>
     </span>
   );
 }

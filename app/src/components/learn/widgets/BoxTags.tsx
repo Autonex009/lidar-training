@@ -35,7 +35,7 @@ export function BoxTags({ getEngine, tags }: { getEngine: () => ViewerEngine | n
     <div ref={host} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {tags.map((t) => (
         <span key={t.id} ref={(el) => { if (el) refs.current.set(t.id, el); else refs.current.delete(t.id); }} data-testid={`box-tag-${t.id}`}
-          className="absolute left-0 top-0 whitespace-nowrap rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-medium" style={{ color: t.color ?? "#fff" }}>{t.text}</span>
+          className="absolute left-0 top-0 whitespace-nowrap rounded bg-black/70 px-1.5 py-0.5 text-[12px] font-medium" style={{ color: t.color ?? "#fff" }}>{t.text}</span>
       ))}
     </div>
   );

@@ -193,7 +193,7 @@ export function CuboidLiveWidget({ onDone, instructions, asset, reference }: Wid
   if (!ref || !frames) return <p className="text-[13px] text-muted">Demo scene not available.</p>;
   const sum = verdict ? mistakeSummary(verdict) : null;
   const toolBtn = (m: ToolMode, label: string, key: string) => (
-    <Button key={m} variant={mode === m ? "primary" : "secondary"} aria-pressed={mode === m} data-testid={`lc-tool-${m}`} onClick={() => changeMode(m)}>{label} <kbd className="ml-1 font-sans text-[11px] text-muted">{key}</kbd></Button>
+    <Button key={m} variant={mode === m ? "primary" : "secondary"} aria-pressed={mode === m} data-testid={`lc-tool-${m}`} onClick={() => changeMode(m)}>{label} <kbd className="ml-1 font-sans text-[12px] text-muted">{key}</kbd></Button>
   );
 
   return (
@@ -204,7 +204,7 @@ export function CuboidLiveWidget({ onDone, instructions, asset, reference }: Wid
         {toolBtn("select", "Select / resize", "V")}
         {toolBtn("move", "Move", "M")}
         {toolBtn("rotate", "Rotate", "R")}
-        <Button data-tour="lc-fit" data-testid="lc-fit" disabled={!selected} onClick={fit}>Fit to points <kbd className="ml-1 font-sans text-[11px] text-muted">G</kbd></Button>
+        <Button data-tour="lc-fit" data-testid="lc-fit" disabled={!selected} onClick={fit}>Fit to points <kbd className="ml-1 font-sans text-[12px] text-muted">G</kbd></Button>
         <Button data-testid="lc-delete" disabled={!selected} onClick={remove}>Delete</Button>
         <label className="ml-1 flex items-center gap-1.5 text-[13px]" data-tour="lc-label">Label
           <select aria-label="Label" data-testid="lc-label" disabled={!selected} value={selected?.label ?? UNLABELLED} onChange={(e) => selected && edit({ type: "patchCuboid", frame: 0, id: selected.id, patch: { label: e.target.value } })} className="h-8 rounded-md border border-line bg-surface px-2 text-[13px] disabled:opacity-50">

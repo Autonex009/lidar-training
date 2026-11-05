@@ -49,7 +49,7 @@ export function ObjectsList(p: PanelProps) {
           <div className="flex items-center gap-1.5 py-0.5 text-[12px] font-medium">
             <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: p.colors[label] ?? "#9ca3af" }} />
             {label === "?" ? "Unidentified" : label}
-            <span className="rounded-full bg-panel px-1.5 text-[11px] text-muted">{items.length}</span>
+            <span className="rounded-full bg-panel px-1.5 text-[12px] text-muted">{items.length}</span>
           </div>
           {items.map(({ c, i }) => {
             const target = p.task.targets.find((t) => t.refCuboidId === c.id);
@@ -58,7 +58,7 @@ export function ObjectsList(p: PanelProps) {
               <button key={c.id} type="button" onClick={() => p.select(c.id === p.selectedId ? null : c.id)} data-testid="object-row"
                 className={`flex w-full items-center justify-between rounded px-2 py-1 text-left text-[12px] ${c.id === p.selectedId ? "bg-accent-tint" : "hover:bg-panel"}`}>
                 <span className="truncate">{nice(c, i, p.task)}{target ? ` - ${target.hint.replace(/^Object |^Large object |^Small object /, "").split(".")[0]}` : ""}</span>
-                <span className="ml-2 shrink-0 text-[11px] text-muted">{flagged ? "flag " : ""}{c.trackId !== undefined && dups.has(c.trackId) ? "dup ID" : ""}</span>
+                <span className="ml-2 shrink-0 text-[12px] text-muted">{flagged ? "flag " : ""}{c.trackId !== undefined && dups.has(c.trackId) ? "dup ID" : ""}</span>
               </button>
             );
           })}
@@ -98,7 +98,7 @@ export function TracksPanel(p: PanelProps) {
               const id = t.frames.get(f);
               return (
                 <button key={f} type="button" onClick={() => { p.goFrame(f); if (id) setTimeout(() => p.select(id), 120); }} title={id ? `Frame ${f + 1}` : `Frame ${f + 1}: no box`}
-                  className={`h-4 w-4 rounded-sm border text-[9px] leading-none ${id ? "border-accent bg-accent text-white" : "border-line bg-panel text-muted"} ${f === p.frame ? "ring-1 ring-ink" : ""}`}>{f + 1}</button>
+                  className={`h-4 w-4 rounded-sm border text-[12px] leading-none ${id ? "border-accent bg-accent text-white" : "border-line bg-panel text-muted"} ${f === p.frame ? "ring-1 ring-ink" : ""}`}>{f + 1}</button>
               );
             })}
           </div>
@@ -140,7 +140,7 @@ export function AttributeEditor(p: PanelProps & { cuboid: Cuboid; onFit: () => v
         </label>
       ))}
       {cuboidTask && (
-        <div className="grid grid-cols-3 gap-1 text-[11px] text-muted">
+        <div className="grid grid-cols-3 gap-1 text-[12px] text-muted">
           {(["L", "W", "H"] as const).map((k, i) => <div key={k}>{k} {c.dims[i].toFixed(2)} m</div>)}
           <div className="col-span-3">Centre {c.center.map((v) => v.toFixed(2)).join(", ")} · yaw {((c.yaw * 180) / Math.PI).toFixed(0)}°</div>
         </div>
@@ -166,7 +166,7 @@ export function FlagsList({ flags, readOnly, onRemove, onSelect }: { flags: Flag
             <span className="block truncate font-medium">{f.cuboidId ? "Box flag" : "Point flag"}{f.frame !== undefined ? ` · frame ${f.frame + 1}` : ""}</span>
             <span className="block text-muted">{f.reason}</span>
           </button>
-          {!readOnly && <button type="button" className="text-[11px] text-muted underline" onClick={() => onRemove(f.id)}>remove</button>}
+          {!readOnly && <button type="button" className="text-[12px] text-muted underline" onClick={() => onRemove(f.id)}>remove</button>}
         </li>
       ))}
     </ul>
@@ -179,7 +179,7 @@ export function PendingForm({ title, tags, onCancel, onAdd, hint }: { title: str
   return (
     <div className="mt-1 space-y-1 rounded border border-accent bg-accent-tint p-2" data-testid="pending-form">
       <div className="text-[12px] font-medium">{title}</div>
-      {hint && <div className="text-[11px] text-muted">{hint}</div>}
+      {hint && <div className="text-[12px] text-muted">{hint}</div>}
       {tags && (
         <select className={input} value={tag} aria-label="Error tag" onChange={(e) => setTag(e.target.value)}>
           {tags.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
@@ -198,11 +198,11 @@ export function CheckpointsPanel({ task, doc }: { task: WorkspaceTask; doc: Anno
   const done = task.checkpoints.filter((c) => doc.checkpoints[c.key]).length;
   return (
     <div>
-      <p className="mb-1 text-[11px] text-muted">{done} of {task.checkpoints.length} complete. Use the viewer controls; ticks appear automatically.</p>
+      <p className="mb-1 text-[12px] text-muted">{done} of {task.checkpoints.length} complete. Use the viewer controls; ticks appear automatically.</p>
       <ul className="space-y-0.5">
         {task.checkpoints.map((c) => (
           <li key={c.key} className="flex items-center gap-1.5 text-[12px]" data-testid={`checkpoint-${c.key}`}>
-            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] ${doc.checkpoints[c.key] ? "border-success bg-success text-white" : "border-line"}`}>{doc.checkpoints[c.key] ? "✓" : ""}</span>
+            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[12px] ${doc.checkpoints[c.key] ? "border-success bg-success text-white" : "border-line"}`}>{doc.checkpoints[c.key] ? "✓" : ""}</span>
             <span className={doc.checkpoints[c.key] ? "" : "text-muted"}>{c.label}</span>
           </li>
         ))}
@@ -239,7 +239,7 @@ export function ErrorsList({ doc, task, readOnly, onRemove }: { doc: AnnotationD
       {errs.map((e) => (
         <li key={e.id} className="flex items-start justify-between gap-1 rounded border border-line px-2 py-1 text-[12px]" data-testid="error-row">
           <span className="min-w-0"><span className="font-medium">{task.errorTags.find((t) => t.key === e.tag)?.name ?? e.tag}</span>{e.targetAnnotationId ? "" : " (missing object)"}<span className="block text-muted">{e.explanation}</span></span>
-          {!readOnly && <button type="button" className="text-[11px] text-muted underline" onClick={() => onRemove(e.id)}>remove</button>}
+          {!readOnly && <button type="button" className="text-[12px] text-muted underline" onClick={() => onRemove(e.id)}>remove</button>}
         </li>
       ))}
     </ul>
